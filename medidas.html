@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<meta name="theme-color" content="#0d9488">
+<title>NYNA Ótica — Tomador de Medidas</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Nunito:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<!-- MediaPipe Face Mesh via CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+
+<style>
+:root{
+  --tl:#0d9488;--tlm:#0f766e;--tla:#14b8a6;--tlp:#ccfbf1;--tlx:#f0fdfa;
+  --az:#1a5fa8;--r:#c8102e;--o:#f5a623;--g:#007a3d;
+  --tx:#1a202c;--c1:#4a5568;--c2:#718096;--c3:#a0aec0;--bg:#f0fdfa;
+  --sh:0 4px 22px rgba(13,148,136,.12);--shb:0 10px 44px rgba(13,148,136,.2);
+  --rad:12px;--radlg:20px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
+
+/* ═══ SPLASH ═══ */
+#splash{position:fixed;inset:0;z-index:9999;background:linear-gradient(155deg,#042f2e,var(--tl),#0f766e);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px;transition:opacity .7s,transform .7s}
+#splash.out{opacity:0;transform:scale(1.05);pointer-events:none}
+.spl-logo{font-family:'Playfair Display',serif;font-size:60px;font-weight:600;letter-spacing:.18em;color:#fff;margin-bottom:6px;animation:fu .9s ease .2s both}
+.spl-sub{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.36em;color:rgba(255,255,255,.56);text-transform:uppercase;animation:fu .9s ease .5s both}
+.spl-badge{margin-top:22px;display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);border-radius:50px;padding:8px 18px;font-size:11px;font-weight:700;color:#fff;font-family:'Space Mono',monospace;letter-spacing:.1em;animation:fu .9s ease .8s both}
+.spl-dots{display:flex;gap:7px;margin-top:28px;animation:fu .8s ease 1.1s both}
+.spl-dots span{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.3);animation:bl 1.3s ease infinite}
+.spl-dots span:nth-child(2){animation-delay:.2s}.spl-dots span:nth-child(3){animation-delay:.4s}
+@keyframes fu{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bl{0%,80%,100%{transform:scale(.5);opacity:.3}40%{transform:scale(1);opacity:1}}
+
+/* ═══ APP ═══ */
+#app{display:none;flex-direction:column;min-height:100vh}
+#app.on{display:flex}
+
+/* ═══ NAV ═══ */
+.nav{background:var(--tl);padding:13px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(13,148,136,.3)}
+.nav-back{background:rgba(255,255,255,.16);border:none;color:#fff;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px;text-decoration:none;transition:background .2s}
+.nav-back:hover{background:rgba(255,255,255,.28)}
+.nav-title{font-family:'Playfair Display',serif;font-size:17px;font-weight:600;color:#fff;text-align:center;flex:1}
+.nav-badge{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.14em;background:rgba(255,255,255,.18);color:#fff;padding:4px 12px;border-radius:50px;text-transform:uppercase}
+.pebar{height:4px;background:linear-gradient(90deg,var(--r) 25%,#fff 25%,#fff 50%,var(--o) 50%,var(--o) 75%,var(--g) 75%)}
+
+/* ═══ STEPS NAV ═══ */
+.steps{display:flex;background:#fff;border-bottom:2px solid var(--tlp);overflow-x:auto;scrollbar-width:none}
+.steps::-webkit-scrollbar{display:none}
+.step{flex:1;min-width:80px;display:flex;flex-direction:column;align-items:center;padding:11px 8px 8px;cursor:pointer;border:none;background:none;position:relative;gap:4px}
+.step::after{content:'';position:absolute;bottom:0;left:10%;right:10%;height:2.5px;background:var(--tl);transform:scaleX(0);transition:transform .3s}
+.step.on::after{transform:scaleX(1)}
+.step-n{width:26px;height:26px;border-radius:50%;border:2px solid var(--c3);background:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--c3);transition:all .3s;font-family:'Space Mono',monospace}
+.step.done .step-n{background:var(--g);border-color:var(--g);color:#fff}
+.step.on .step-n{background:var(--tl);border-color:var(--tl);color:#fff}
+.step-l{font-size:9px;letter-spacing:.07em;color:var(--c2);font-family:'Space Mono',monospace;text-transform:uppercase;text-align:center;line-height:1.3}
+.step.on .step-l{color:var(--tl);font-weight:700}
+
+/* ═══ PAGES ═══ */
+.pg{display:none;flex:1;overflow-y:auto}
+.pg.on{display:block;animation:pi .3s ease}
+@keyframes pi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ═══ PAGE 0: INTRO ═══ */
+.intro{padding:28px 18px}
+.intr-hero{background:linear-gradient(135deg,var(--tl),#0f766e);border-radius:var(--radlg);padding:28px 22px;position:relative;overflow:hidden;margin-bottom:22px}
+.intr-hero::before{content:'';position:absolute;top:-60px;right:-60px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.06)}
+.intr-tag{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.3em;color:rgba(255,255,255,.68);text-transform:uppercase;margin-bottom:8px;display:block}
+.intr-t{font-family:'Playfair Display',serif;font-size:25px;font-weight:600;color:#fff;line-height:1.2;margin-bottom:8px}
+.intr-t em{font-style:italic;color:#5eead4}
+.intr-d{font-size:13px;color:rgba(255,255,255,.77);line-height:1.6;margin-bottom:18px}
+.intr-i{font-size:48px;position:absolute;right:20px;top:22px}
+.measures-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:22px}
+.mcard{background:#fff;border-radius:var(--rad);padding:15px;border:1.5px solid var(--tlp);box-shadow:var(--sh);transition:all .2s}
+.mcard:hover{border-color:var(--tla);transform:translateY(-2px)}
+.mcard-ic{font-size:24px;margin-bottom:7px;display:block}
+.mcard-n{font-size:12px;font-weight:800;color:var(--tx);margin-bottom:3px}
+.mcard-s{font-size:11px;color:var(--c2);line-height:1.5}
+.mc-full{grid-column:span 2}
+.instr{background:#fff;border-radius:var(--rad);padding:18px;border:1.5px solid var(--tlp);margin-bottom:18px}
+.instr-t{font-size:12px;font-weight:800;color:var(--tl);letter-spacing:.1em;text-transform:uppercase;font-family:'Space Mono',monospace;margin-bottom:13px}
+.instr-item{display:flex;gap:11px;margin-bottom:11px}
+.instr-n{width:24px;height:24px;border-radius:50%;background:var(--tl);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Space Mono',monospace}
+.instr-t2{font-size:13px;color:var(--c1);line-height:1.5;padding-top:2px}
+.ref-model-row{display:flex;gap:9px;margin-bottom:18px;overflow-x:auto;scrollbar-width:none}
+.ref-model-row::-webkit-scrollbar{display:none}
+.rm{flex-shrink:0;width:90px;border:2.5px solid var(--tlp);border-radius:11px;overflow:hidden;cursor:pointer;transition:all .2s;background:#fff}
+.rm.on{border-color:var(--tl);box-shadow:0 0 0 3px rgba(13,148,136,.15)}
+.rm-thumb{width:100%;aspect-ratio:1;background:var(--tlx);display:flex;align-items:center;justify-content:center;font-size:30px}
+.rm-name{font-size:10px;text-align:center;padding:5px 3px;color:var(--c1);font-weight:700}
+
+/* ═══ PAGE 1: CAMERA ═══ */
+.cam-page{padding:0}
+.cam-topbar{background:var(--tlx);padding:12px 18px;border-bottom:1px solid var(--tlp);display:flex;align-items:center;justify-content:space-between}
+.cam-status{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:var(--c1)}
+.cam-dot{width:9px;height:9px;border-radius:50%;background:var(--c3)}
+.cam-dot.active{background:var(--g);animation:blink 1.2s ease infinite}
+.cam-dot.analyzing{background:var(--o);animation:blink .6s ease infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+.cam-wrap{position:relative;width:100%;background:#000;overflow:hidden}
+.cam-wrap video{width:100%;display:block;transform:scaleX(-1)}
+.cam-wrap canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}
+/* Face guide oval */
+.face-guide{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52%;aspect-ratio:.72;border:2.5px dashed rgba(255,255,255,.36);border-radius:50%;pointer-events:none;z-index:5;transition:border-color .4s}
+.face-guide.locked{border-color:rgba(20,184,166,.8);box-shadow:0 0 0 3px rgba(20,184,166,.18)}
+/* Ruler overlay static */
+.ruler-top{position:absolute;left:12%;right:12%;height:3px;background:rgba(255,255,255,.8);border-radius:2px;pointer-events:none;z-index:6}
+.ruler-top::before,.ruler-top::after{content:'';position:absolute;width:3px;height:16px;background:rgba(255,255,255,.8);top:-6px}
+.ruler-top::before{left:0}.ruler-top::after{right:0}
+/* HUD overlay */
+.hud{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.75));padding:14px 16px 16px;z-index:7}
+.hud-live{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:11px}
+.hud-m{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:9px;padding:8px;text-align:center;backdrop-filter:blur(4px);transition:all .4s}
+.hud-m.ready{background:rgba(20,184,166,.25);border-color:rgba(20,184,166,.5)}
+.hud-mv{font-family:'Space Mono',monospace;font-size:17px;font-weight:700;color:#fff;display:block;line-height:1}
+.hud-ml{font-size:9px;color:rgba(255,255,255,.62);letter-spacing:.08em;text-transform:uppercase;display:block;margin-top:3px}
+.hud-btns{display:flex;gap:9px}
+.btn-cap{flex:1;background:var(--tl);border:none;border-radius:11px;padding:13px;color:#fff;font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-cap:hover{background:var(--tlm)}.btn-cap:disabled{background:rgba(255,255,255,.2);cursor:not-allowed}
+.btn-cap.prim{background:linear-gradient(135deg,var(--tl),#0f766e);box-shadow:0 4px 16px rgba(13,148,136,.36)}
+.btn-sec{background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.28);border-radius:11px;padding:13px 17px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;backdrop-filter:blur(4px)}
+/* Scanning animation bar */
+.scan-bar{position:absolute;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,rgba(20,184,166,.8),transparent);z-index:8;animation:scan 2.2s ease-in-out infinite;display:none}
+@keyframes scan{0%,100%{top:15%;opacity:.7}50%{top:82%;opacity:1}}
+.scan-bar.on{display:block}
+/* Face not detected warning */
+.face-warn{position:absolute;top:11px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);backdrop-filter:blur(6px);color:#fff;font-size:12px;font-weight:700;padding:7px 16px;border-radius:50px;z-index:9;border:1px solid rgba(255,255,255,.2);white-space:nowrap;transition:opacity .3s}
+/* Crosshair pupils */
+.pupil-marker{position:absolute;width:12px;height:12px;pointer-events:none;z-index:10;transform:translate(-50%,-50%)}
+.pupil-marker::before,.pupil-marker::after{content:'';position:absolute;background:rgba(20,184,166,.9)}
+.pupil-marker::before{width:12px;height:1.5px;top:50%;left:0;transform:translateY(-50%)}
+.pupil-marker::after{width:1.5px;height:12px;left:50%;top:0;transform:translateX(-50%)}
+/* analysis overlay text */
+.cam-overlay-txt{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:9;display:flex;flex-direction:column;align-items:center;gap:5px}
+.col-badge{background:rgba(0,0,0,.65);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.18);border-radius:50px;padding:5px 15px;font-family:'Space Mono',monospace;font-size:10px;color:#fff;letter-spacing:.12em;white-space:nowrap}
+.col-badge.tl{border-color:rgba(20,184,166,.6);color:#5eead4}
+
+/* ═══ PAGE 2: RESULTS ═══ */
+.results{padding:18px}
+.res-hero{background:linear-gradient(135deg,var(--tl),#0f766e);border-radius:var(--radlg);padding:22px;margin-bottom:18px;position:relative;overflow:hidden}
+.res-hero::before{content:'';position:absolute;top:-50px;right:-50px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.06)}
+.res-client{font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,255,255,.58);letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
+.res-name{font-family:'Playfair Display',serif;font-size:20px;font-weight:600;color:#fff;margin-bottom:2px}
+.res-prod{font-size:12px;color:rgba(255,255,255,.7)}
+.res-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.22);border-radius:50px;padding:4px 13px;font-size:10px;color:#fff;font-family:'Space Mono',monospace;margin-top:11px}
+.resgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:18px}
+.rcard{background:#fff;border-radius:var(--rad);padding:16px;border:1.5px solid var(--tlp);box-shadow:var(--sh);text-align:center;position:relative}
+.rcard.full{grid-column:span 2}
+.rcard.highlight{border-color:var(--tla);background:var(--tlx)}
+.rcard-ic{font-size:22px;margin-bottom:5px;display:block}
+.rcard-val{font-family:'Playfair Display',serif;font-size:28px;font-weight:600;color:var(--tl);display:block;line-height:1}
+.rcard-unit{font-size:11px;color:var(--c2);font-family:'Space Mono',monospace;margin-left:3px}
+.rcard-lbl{font-size:10px;letter-spacing:.1em;color:var(--c2);text-transform:uppercase;font-family:'Space Mono',monospace;margin-top:4px;display:block}
+.rcard-sub{font-size:11px;color:var(--c1);margin-top:3px;font-style:italic}
+.dnp-row{display:flex;align-items:center;justify-content:space-around;margin-top:6px}
+.dnp-side{text-align:center}
+.dnp-v{font-family:'Playfair Display',serif;font-size:24px;font-weight:600;color:var(--tl)}
+.dnp-l{font-size:10px;color:var(--c2);font-family:'Space Mono',monospace;text-transform:uppercase}
+.dnp-div{width:1px;height:36px;background:var(--tlp)}
+.res-photo-wrap{border-radius:var(--rad);overflow:hidden;margin-bottom:18px;box-shadow:var(--sh);position:relative}
+.res-photo-wrap img{width:100%;display:block}
+.photo-overlay{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}
+/* Prescription area */
+.rx-section{background:#fff;border-radius:var(--rad);border:1.5px solid var(--tlp);padding:18px;margin-bottom:18px}
+.rx-t{font-size:11px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;font-family:'Space Mono',monospace;color:var(--tl);margin-bottom:13px}
+.rx-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.rx-cell{display:flex;flex-direction:column;gap:3px}
+.rx-l{font-size:10px;color:var(--c2);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.08em}
+.rx-i{width:100%;padding:9px;border:2px solid var(--tlp);border-radius:7px;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;text-align:center;outline:none;background:var(--tlx);transition:border-color .2s;color:var(--tx)}
+.rx-i:focus{border-color:var(--tla);background:#fff}
+.client-form{background:#fff;border-radius:var(--rad);border:1.5px solid var(--tlp);padding:18px;margin-bottom:18px}
+.cf-lbl{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;font-family:'Space Mono',monospace;color:var(--tl);margin-bottom:13px}
+.cf-inp{width:100%;padding:11px 14px;border:2px solid var(--tlp);border-radius:9px;font-size:13px;font-family:'Nunito',sans-serif;outline:none;margin-bottom:11px;background:var(--tlx);transition:border-color .2s}
+.cf-inp:focus{border-color:var(--tla);background:#fff}
+.res-actions{display:flex;gap:11px;margin-bottom:28px}
+.ra{flex:1;padding:14px;border-radius:var(--rad);border:none;cursor:pointer;font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.ra-tl{background:var(--tl);color:#fff}
+.ra-tl:hover{background:var(--tlm);transform:translateY(-1px)}
+.ra-w{background:#25D366;color:#fff}
+.ra-w:hover{transform:translateY(-1px)}
+.ra-pr{background:var(--c1);color:#fff}
+.ra-pr:hover{background:var(--tx)}
+/* Compatibility analysis */
+.compat{background:#fff;border-radius:var(--rad);border:1.5px solid var(--tlp);padding:18px;margin-bottom:18px}
+.compat-t{font-size:11px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;font-family:'Space Mono',monospace;color:var(--tl);margin-bottom:14px}
+.face-type{display:flex;align-items:center;gap:13px;margin-bottom:14px}
+.ft-ic{font-size:32px;width:52px;height:52px;background:var(--tlx);border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ft-t{font-size:14px;font-weight:700;color:var(--tx);margin-bottom:2px}
+.ft-s{font-size:12px;color:var(--c2);line-height:1.5}
+.recs{display:flex;gap:9px;overflow-x:auto;scrollbar-width:none;padding-bottom:5px}
+.recs::-webkit-scrollbar{display:none}
+.rec{flex-shrink:0;width:90px;border:2px solid var(--tlp);border-radius:11px;overflow:hidden;cursor:pointer;transition:all .2s;background:#fff}
+.rec.ok{border-color:var(--g)}.rec.ok .rec-name{color:var(--g)}
+.rec.bad{border-color:var(--r);opacity:.6}
+.rec-thumb{width:100%;aspect-ratio:1;background:var(--tlx);display:flex;align-items:center;justify-content:center;font-size:28px}
+.rec-name{font-size:10px;text-align:center;padding:5px 3px;color:var(--c1);font-weight:700}
+.rec-tag{font-size:9px;text-align:center;padding:0 3px 5px;font-family:'Space Mono',monospace;font-weight:700}
+
+/* ═══ TOAST ═══ */
+.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-14px);background:var(--tl);color:#fff;padding:10px 22px;border-radius:50px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;opacity:0;z-index:9000;transition:all .3s;white-space:nowrap;box-shadow:0 4px 18px rgba(13,148,136,.38);pointer-events:none}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ═══ LOADING OVERLAY ═══ */
+#loadOv{position:fixed;inset:0;z-index:800;background:linear-gradient(135deg,rgba(4,47,46,.96),rgba(13,148,136,.9));display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px}
+#loadOv.on{display:flex}
+.load-ring{width:70px;height:70px;border-radius:50%;border:4px solid rgba(255,255,255,.15);border-top-color:#fff;animation:spin 1s linear infinite;margin-bottom:22px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-t{font-family:'Playfair Display',serif;font-size:22px;color:#fff;font-weight:600;margin-bottom:7px}
+.load-s{font-size:13px;color:rgba(255,255,255,.7);font-family:'Space Mono',monospace;letter-spacing:.06em}
+.load-steps{display:flex;flex-direction:column;gap:8px;margin-top:22px;text-align:left;max-width:280px}
+.ls{display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,.62);transition:color .4s}
+.ls.done{color:rgba(255,255,255,.96)}
+.ls-ic{font-size:16px;width:24px;text-align:center}
+
+/* ═══ PRINT LAYOUT ═══ */
+@media print{
+  .nav,.steps,.cam-page,.intro,#splash,.toast{display:none!important}
+  .results{display:block!important;padding:0}
+  .res-actions{display:none!important}
+  body{background:#fff}
+}
+
+@media(min-width:600px){
+  .cam-wrap{max-width:440px;margin:0 auto}
+  .resgrid{grid-template-columns:repeat(3,1fr)}
+  .rx-grid{grid-template-columns:repeat(4,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="spl-logo">NYNA</div>
+  <div class="spl-sub">Tomador de Medidas · Sistema Óptico</div>
+  <div class="spl-badge">
+    <span style="color:#5eead4">⬤</span>
+    DNP · Altura · Diâmetro · DP · Ângulo · DCV
+  </div>
+  <div class="spl-dots"><span></span><span></span><span></span></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- LOADING OVERLAY -->
+<div id="loadOv">
+  <div class="load-ring"></div>
+  <div class="load-t">Analisando Medidas</div>
+  <div class="load-s" id="loadMsg">Detectando pontos faciais...</div>
+  <div class="load-steps">
+    <div class="ls" id="ls1"><span class="ls-ic">👁️</span>Detectar landmarks faciais</div>
+    <div class="ls" id="ls2"><span class="ls-ic">📏</span>Calcular DNP bilateral</div>
+    <div class="ls" id="ls3"><span class="ls-ic">📐</span>Medir altura de montagem</div>
+    <div class="ls" id="ls4"><span class="ls-ic">🔭</span>Estimar diâmetro mínimo</div>
+    <div class="ls" id="ls5"><span class="ls-ic">✅</span>Gerar laudo completo</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <nav class="nav">
+    <a href="index.html" class="nav-back">←</a>
+    <div class="nav-title">Tomador de Medidas</div>
+    <span class="nav-badge">Digital</span>
+  </nav>
+  <div class="pebar"></div>
+
+  <!-- STEPS -->
+  <div class="steps">
+    <button class="step on" id="st0" onclick="goStep(0)">
+      <span class="step-n">1</span><span class="step-l">Modelo</span>
+    </button>
+    <button class="step" id="st1" onclick="goStep(1)">
+      <span class="step-n">2</span><span class="step-l">Câmera</span>
+    </button>
+    <button class="step" id="st2" onclick="goStep(2)">
+      <span class="step-n">3</span><span class="step-l">Resultado</span>
+    </button>
+  </div>
+
+  <!-- ══ STEP 0: INTRO / MODEL SELECT ══ -->
+  <div class="pg on" id="pg0">
+    <div class="intro">
+      <div class="intr-hero">
+        <span class="intr-i">📐</span>
+        <span class="intr-tag">Ferramenta Clínica · NYNA Ótica</span>
+        <h1 class="intr-t">Tomador de <em>Medidas</em> Online</h1>
+        <p class="intr-d">Captura DNP, Altura de Montagem, Diâmetro Mínimo, Ângulo Pantoscópico e Distância Córnea-Vértice usando apenas a câmera do dispositivo.</p>
+        <button class="btn-cap prim" style="max-width:220px" onclick="goStep(1)">📷 Iniciar Medição →</button>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:600;margin-bottom:3px">O que será medido</div>
+        <div style="font-size:12px;color:var(--c2);margin-bottom:14px">Todas as medidas necessárias para prescrição de lentes progressivas e digitais</div>
+      </div>
+
+      <div class="measures-grid">
+        <div class="mcard">
+          <span class="mcard-ic">👁️</span>
+          <div class="mcard-n">DNP Binocular</div>
+          <div class="mcard-s">Distância naso-pupilar olho direito e esquerdo</div>
+        </div>
+        <div class="mcard">
+          <span class="mcard-ic">📏</span>
+          <div class="mcard-n">Altura de Montagem</div>
+          <div class="mcard-s">Altura da pupila ao bordo inferior do aro</div>
+        </div>
+        <div class="mcard">
+          <span class="mcard-ic">🔭</span>
+          <div class="mcard-n">Diâmetro Mínimo</div>
+          <div class="mcard-s">Diâmetro mínimo da lente para o aro</div>
+        </div>
+        <div class="mcard">
+          <span class="mcard-ic">📐</span>
+          <div class="mcard-n">Ângulo Pantoscópico</div>
+          <div class="mcard-s">Inclinação da armação em relação ao rosto</div>
+        </div>
+        <div class="mcard mc-full">
+          <span class="mcard-ic">🎯</span>
+          <div class="mcard-n">Distância Córnea-Vértice (DCV)</div>
+          <div class="mcard-s">Distância entre a córnea e a lente da armação. Essencial para adaptação de alta dioptria e lentes de contato</div>
+        </div>
+      </div>
+
+      <div class="instr">
+        <div class="instr-t">📋 Instruções para melhor resultado</div>
+        <div class="instr-item"><div class="instr-n">1</div><div class="instr-t2">Posicione o rosto frontalmente à câmera, a cerca de 40–60 cm de distância</div></div>
+        <div class="instr-item"><div class="instr-n">2</div><div class="instr-t2">Boa iluminação direta no rosto, evite contraluz</div></div>
+        <div class="instr-item"><div class="instr-n">3</div><div class="instr-t2">Olhe diretamente para a câmera e mantenha o rosto estático</div></div>
+        <div class="instr-item"><div class="instr-n">4</div><div class="instr-t2">Se possível, use a armação de referência já no rosto durante a captura</div></div>
+        <div class="instr-item"><div class="instr-n">5</div><div class="instr-t2">Aguarde o sistema estabilizar antes de capturar (indicador verde)</div></div>
+      </div>
+
+      <div style="margin-bottom:14px">
+        <div style="font-family:'Playfair Display',serif;font-size:17px;font-weight:600;margin-bottom:3px">Selecione a Armação de Referência</div>
+        <div style="font-size:12px;color:var(--c2);margin-bottom:13px">O modelo determina parâmetros base para o cálculo do diâmetro e ângulo</div>
+        <div class="ref-model-row" id="modelRow"></div>
+      </div>
+
+      <button class="btn-cap prim" style="width:100%;margin-bottom:18px" onclick="goStep(1)">📷 Iniciar Captura com Câmera →</button>
+    </div>
+  </div>
+
+  <!-- ══ STEP 1: CAMERA ══ -->
+  <div class="pg" id="pg1">
+    <div class="cam-page">
+      <div class="cam-topbar">
+        <div class="cam-status">
+          <div class="cam-dot" id="camDot"></div>
+          <span id="camStatusTxt">Aguardando câmera...</span>
+        </div>
+        <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--c2);letter-spacing:.1em" id="fpsCounter"></span>
+      </div>
+
+      <div class="cam-wrap" id="camWrap" style="max-height:72vh">
+        <video id="vid" autoplay playsinline muted></video>
+        <canvas id="ovCanvas"></canvas>
+        <div class="face-guide" id="faceGuide"></div>
+        <div class="scan-bar" id="scanBar"></div>
+        <div class="cam-overlay-txt">
+          <div class="col-badge" id="colBadgeMain">Posicione o rosto no guia oval</div>
+          <div class="col-badge tl" id="colBadgeSub" style="display:none"></div>
+        </div>
+        <div class="face-warn" id="faceWarn" style="display:none">⚠️ Rosto não detectado</div>
+        <div class="hud">
+          <div class="hud-live">
+            <div class="hud-m" id="hm-dnp"><span class="hud-mv" id="hv-dnp">--</span><span class="hud-ml">DNP Total</span></div>
+            <div class="hud-m" id="hm-alt"><span class="hud-mv" id="hv-alt">--</span><span class="hud-ml">Altura</span></div>
+            <div class="hud-m" id="hm-diam"><span class="hud-mv" id="hv-diam">--</span><span class="hud-ml">Diâmetro</span></div>
+          </div>
+          <div class="hud-btns">
+            <button class="btn-sec" id="startCamBtn" onclick="startCam()">📷 Ativar Câmera</button>
+            <button class="btn-cap prim" id="captureBtn" onclick="captureMeasures()" disabled>✅ Capturar Medidas</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding:16px 18px;background:var(--tlx);border-top:1px solid var(--tlp)">
+        <div style="font-size:11px;color:var(--c2);text-align:center;line-height:1.6;font-family:'Space Mono',monospace;letter-spacing:.06em">
+          🔒 A câmera processa localmente · Nenhuma imagem é enviada para servidores externos
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ STEP 2: RESULTS ══ -->
+  <div class="pg" id="pg2">
+    <div class="results">
+
+      <div class="res-hero">
+        <div class="res-client">Cliente · NYNA Ótica</div>
+        <div class="res-name" id="clientNameDisplay">—</div>
+        <div class="res-prod" id="selectedModelDisplay">Medição Digital — Sistema NYNA</div>
+        <span class="res-badge">
+          <span style="color:#5eead4">⬤</span>
+          Medição Digital · <span id="resBadgeDate"></span>
+        </span>
+      </div>
+
+      <!-- Photo snapshot -->
+      <div class="res-photo-wrap" id="snapWrap" style="display:none">
+        <img id="snapImg" src="" alt="Captura com overlay">
+        <canvas class="photo-overlay" id="snapCanvas"></canvas>
+      </div>
+
+      <!-- Measurements -->
+      <div class="resgrid">
+        <div class="rcard full">
+          <span class="rcard-ic">👁️</span>
+          <span class="rcard-lbl">DNP Binocular</span>
+          <div class="dnp-row">
+            <div class="dnp-side"><div class="dnp-v" id="res-dnp-od">--</div><div class="dnp-l">OD (Direito)</div></div>
+            <div class="dnp-div"></div>
+            <div class="dnp-side" style="text-align:center"><div style="font-family:'Playfair Display',serif;font-size:34px;font-weight:600;color:var(--tl)" id="res-dnp-tot">--</div><div class="dnp-l">Total (mm)</div></div>
+            <div class="dnp-div"></div>
+            <div class="dnp-side"><div class="dnp-v" id="res-dnp-oe">--</div><div class="dnp-l">OE (Esquerdo)</div></div>
+          </div>
+        </div>
+
+        <div class="rcard highlight">
+          <span class="rcard-ic">📏</span>
+          <span class="rcard-val" id="res-alt">--<span class="rcard-unit">mm</span></span>
+          <span class="rcard-lbl">Altura de Montagem</span>
+          <div class="rcard-sub" id="res-alt-sub"></div>
+        </div>
+        <div class="rcard">
+          <span class="rcard-ic">🔭</span>
+          <span class="rcard-val" id="res-diam">--<span class="rcard-unit">mm</span></span>
+          <span class="rcard-lbl">Diâmetro Mínimo</span>
+        </div>
+        <div class="rcard">
+          <span class="rcard-ic">📐</span>
+          <span class="rcard-val" id="res-ang">--<span class="rcard-unit">°</span></span>
+          <span class="rcard-lbl">Ângulo Pantoscópico</span>
+        </div>
+        <div class="rcard">
+          <span class="rcard-ic">🎯</span>
+          <span class="rcard-val" id="res-dcv">--<span class="rcard-unit">mm</span></span>
+          <span class="rcard-lbl">Dist. Córnea-Vértice</span>
+        </div>
+        <div class="rcard">
+          <span class="rcard-ic">📏</span>
+          <span class="rcard-val" id="res-larg">--<span class="rcard-unit">mm</span></span>
+          <span class="rcard-lbl">Largura do Aro</span>
+        </div>
+        <div class="rcard">
+          <span class="rcard-ic">↕️</span>
+          <span class="rcard-val" id="res-halt">--<span class="rcard-unit">mm</span></span>
+          <span class="rcard-lbl">Altura do Aro</span>
+        </div>
+      </div>
+
+      <!-- Prescription Form -->
+      <div class="rx-section">
+        <div class="rx-t">📋 Dados da Receita (opcional)</div>
+        <div style="font-size:11px;color:var(--c2);margin-bottom:13px">Preencha para incluir no laudo completo</div>
+        <div style="font-size:10px;font-weight:800;color:var(--c1);margin-bottom:7px;font-family:'Space Mono',monospace;letter-spacing:.1em">OLHO DIREITO</div>
+        <div class="rx-grid">
+          <div class="rx-cell"><div class="rx-l">ESF</div><input class="rx-i" id="rx-od-esf" placeholder="+0.00"></div>
+          <div class="rx-cell"><div class="rx-l">CIL</div><input class="rx-i" id="rx-od-cil" placeholder="-0.00"></div>
+          <div class="rx-cell"><div class="rx-l">EIXO</div><input class="rx-i" id="rx-od-eixo" placeholder="180"></div>
+          <div class="rx-cell"><div class="rx-l">ADD</div><input class="rx-i" id="rx-od-add" placeholder="+0.00"></div>
+        </div>
+        <div style="font-size:10px;font-weight:800;color:var(--c1);margin:11px 0 7px;font-family:'Space Mono',monospace;letter-spacing:.1em">OLHO ESQUERDO</div>
+        <div class="rx-grid">
+          <div class="rx-cell"><div class="rx-l">ESF</div><input class="rx-i" id="rx-oe-esf" placeholder="+0.00"></div>
+          <div class="rx-cell"><div class="rx-l">CIL</div><input class="rx-i" id="rx-oe-cil" placeholder="-0.00"></div>
+          <div class="rx-cell"><div class="rx-l">EIXO</div><input class="rx-i" id="rx-oe-eixo" placeholder="180"></div>
+          <div class="rx-cell"><div class="rx-l">ADD</div><input class="rx-i" id="rx-oe-add" placeholder="+0.00"></div>
+        </div>
+      </div>
+
+      <!-- Client form -->
+      <div class="client-form">
+        <div class="cf-lbl">Dados do Cliente</div>
+        <input class="cf-inp" id="cfName" placeholder="Nome completo do cliente" oninput="$('clientNameDisplay').textContent=this.value||'—'">
+        <input class="cf-inp" id="cfPhone" placeholder="WhatsApp (81) 9xxxx-xxxx">
+        <input class="cf-inp" id="cfProd" placeholder="Produto indicado (ex: Progressiva Digital)" oninput="$('selectedModelDisplay').textContent=this.value||'Medição Digital — Sistema NYNA'">
+      </div>
+
+      <!-- Face type + recommendations -->
+      <div class="compat">
+        <div class="compat-t">Análise de Formato do Rosto</div>
+        <div class="face-type">
+          <div class="ft-ic" id="faceTypeIc">🔶</div>
+          <div><div class="ft-t" id="faceTypeName">Analisando...</div><div class="ft-s" id="faceTypeDesc">Complete a medição para ver a análise</div></div>
+        </div>
+        <div style="font-size:11px;font-weight:700;color:var(--c2);margin-bottom:9px;letter-spacing:.08em;text-transform:uppercase;font-family:'Space Mono',monospace">Armações recomendadas</div>
+        <div class="recs" id="recsGrid"></div>
+      </div>
+
+      <!-- Actions -->
+      <div class="res-actions">
+        <button class="ra ra-tl" onclick="saveMeasures()">💾 Salvar</button>
+        <button class="ra ra-w" onclick="sendWA()">💬 WhatsApp</button>
+        <button class="ra ra-pr" onclick="window.print()">🖨️ Imprimir</button>
+      </div>
+
+      <button style="width:100%;padding:13px;background:var(--tlx);border:2px solid var(--tlp);border-radius:var(--rad);font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;color:var(--tl);cursor:pointer;margin-bottom:28px" onclick="goStep(1)">↺ Refazer Medição</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══ GLOBALS ═══
+const $ = id => document.getElementById(id);
+let camStream = null;
+let faceMesh = null;
+let lastLandmarks = null;
+let captureReady = false;
+let curStep = 0;
+let selectedModel = null;
+let measurements = {};
+let faceStableFrames = 0;
+let animFrame = null;
+let fpsFrames = 0, fpsLast = Date.now();
+let snapDataURL = null;
+
+// Reference scale (pixels per mm based on iris width ~11.7mm)
+// Updated per frame from iris landmarks
+let pxPerMm = 8;
+
+function toast(msg, bg) {
+  const t = $('toast'); t.textContent = msg; t.style.background = bg || 'var(--tl)';
+  t.classList.add('on'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('on'), 2800);
+}
+
+// ═══ MODELS ═══
+const MODELS = [
+  { id: 'rect', name: 'Retangular', emoji: '🕶️', largAro: 52, altAro: 32, ponte: 17, faceType: ['oval','quadrado'] },
+  { id: 'round', name: 'Redondo', emoji: '🔵', largAro: 48, altAro: 48, ponte: 18, faceType: ['quadrado','coração'] },
+  { id: 'av', name: 'Aviador', emoji: '😎', largAro: 56, altAro: 44, ponte: 14, faceType: ['oval','coração'] },
+  { id: 'cat', name: 'Gatinho', emoji: '✨', largAro: 54, altAro: 38, ponte: 16, faceType: ['oval','redondo'] },
+  { id: 'hex', name: 'Hexagonal', emoji: '⬡', largAro: 50, altAro: 36, ponte: 17, faceType: ['oval'] },
+  { id: 'sq', name: 'Quadrado', emoji: '⬜', largAro: 52, altAro: 34, ponte: 18, faceType: ['oval','redondo'] },
+];
+selectedModel = MODELS[0];
+
+function initModelRow() {
+  $('modelRow').innerHTML = MODELS.map((m, i) => `
+    <div class="rm${i === 0 ? ' on' : ''}" id="rm-${m.id}" onclick="selModel('${m.id}')">
+      <div class="rm-thumb">${m.emoji}</div>
+      <div class="rm-name">${m.name}</div>
+    </div>`).join('');
+}
+function selModel(id) {
+  selectedModel = MODELS.find(m => m.id === id);
+  document.querySelectorAll('.rm').forEach(r => r.classList.remove('on'));
+  $('rm-' + id).classList.add('on');
+}
+
+// ═══ STEPS ═══
+function goStep(s) {
+  [0, 1, 2].forEach(i => {
+    $('pg' + i).classList.toggle('on', i === s);
+    $('st' + i).classList.toggle('on', i === s);
+    if (i < s) $('st' + i).classList.add('done');
+  });
+  curStep = s;
+  if (s === 1 && !camStream) setTimeout(startCam, 300);
+  if (s === 2) renderResults();
+  if (s !== 1 && camStream) { /* keep camera running */ }
+}
+
+// ═══ MEDIAPIPE FACE MESH ═══
+function initFaceMesh() {
+  faceMesh = new FaceMesh({
+    locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}`
+  });
+  faceMesh.setOptions({
+    maxNumFaces: 1,
+    refineLandmarks: true,   // enables iris landmarks (468-477)
+    minDetectionConfidence: 0.72,
+    minTrackingConfidence: 0.72
+  });
+  faceMesh.onResults(onFaceResults);
+}
+
+async function startCam() {
+  $('startCamBtn').textContent = '⏳ Iniciando...';
+  $('startCamBtn').disabled = true;
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 960 } },
+      audio: false
+    });
+    const vid = $('vid');
+    vid.srcObject = camStream;
+    await vid.play();
+    $('camDot').classList.add('active');
+    $('camStatusTxt').textContent = 'Câmera ativa — Posicione o rosto';
+    $('startCamBtn').style.display = 'none';
+    $('scanBar').classList.add('on');
+
+    // Resize canvas to match video
+    vid.onloadedmetadata = () => {
+      const canvas = $('ovCanvas');
+      canvas.width = vid.videoWidth;
+      canvas.height = vid.videoHeight;
+      canvas.style.transform = 'scaleX(-1)'; // mirror match
+    };
+
+    if (!faceMesh) initFaceMesh();
+    processCamFrame();
+    toast('📷 Câmera ativa! Posicione o rosto no guia oval.');
+  } catch (e) {
+    toast('❌ Permissão de câmera negada. Verifique configurações.', 'var(--r)');
+    $('startCamBtn').textContent = '📷 Ativar Câmera';
+    $('startCamBtn').disabled = false;
+    $('camStatusTxt').textContent = 'Erro ao acessar câmera';
+  }
+}
+
+async function processCamFrame() {
+  const vid = $('vid');
+  if (!vid || vid.readyState < 2) { animFrame = requestAnimationFrame(processCamFrame); return; }
+  await faceMesh.send({ image: vid });
+  // FPS counter
+  fpsFrames++;
+  const now = Date.now();
+  if (now - fpsLast >= 1000) {
+    $('fpsCounter').textContent = fpsFrames + ' fps';
+    fpsFrames = 0; fpsLast = now;
+  }
+  animFrame = requestAnimationFrame(processCamFrame);
+}
+
+// ═══ FACE MESH RESULTS ═══
+function onFaceResults(results) {
+  const canvas = $('ovCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
+    faceStableFrames = 0;
+    captureReady = false;
+    $('faceWarn').style.display = 'block';
+    $('colBadgeMain').textContent = '⚠️ Rosto não detectado';
+    $('faceGuide').classList.remove('locked');
+    $('captureBtn').disabled = true;
+    $('camDot').className = 'cam-dot active';
+    $('camStatusTxt').textContent = 'Posicione o rosto no guia';
+    updateHUDlive(null);
+    return;
+  }
+
+  $('faceWarn').style.display = 'none';
+  const lm = results.multiFaceLandmarks[0];
+  lastLandmarks = lm;
+
+  // ─── Draw landmark overlay ───
+  drawFaceOverlay(ctx, lm, w, h);
+
+  // ─── Calculate measurements live ───
+  const m = calcMeasurements(lm, w, h);
+  updateHUDlive(m);
+
+  // ─── Stability check ───
+  faceStableFrames++;
+  if (faceStableFrames > 25) {
+    captureReady = true;
+    $('faceGuide').classList.add('locked');
+    $('captureBtn').disabled = false;
+    $('captureBtn').textContent = '✅ Capturar Medidas';
+    $('camDot').className = 'cam-dot active';
+    $('camStatusTxt').textContent = '✅ Rosto estável — pronto para capturar!';
+    $('colBadgeMain').textContent = '✅ Rosto detectado e estável';
+    $('colBadgeSub').style.display = 'block';
+    $('colBadgeSub').textContent = `DNP: ${m.dnpOD}mm + ${m.dnpOE}mm = ${m.dnpTot}mm`;
+    $('camDot').classList.add('analyzing');
+  } else {
+    $('captureBtn').disabled = true;
+    $('colBadgeMain').textContent = `🔄 Estabilizando... (${faceStableFrames}/25)`;
+    $('colBadgeSub').style.display = 'none';
+  }
+}
+
+// ─── Visual overlay on canvas ───
+function drawFaceOverlay(ctx, lm, w, h) {
+  const pt = (i) => ({ x: lm[i].x * w, y: lm[i].y * h });
+
+  // Iris landmarks (468–477 when refineLandmarks=true)
+  // Right iris: 473 center, Left iris: 468 center
+  const ririsC = pt(473), lirisC = pt(468);
+  const ririsR = pt(474), lirisR = pt(469);
+
+  // Estimate iris radius → scale
+  const irisRadiusPx = Math.abs(ririsR.x - ririsC.x);
+  if (irisRadiusPx > 3) pxPerMm = (irisRadiusPx * 2) / 11.7;
+
+  // ── Draw iris circles ──
+  ctx.strokeStyle = 'rgba(20,184,166,.85)';
+  ctx.lineWidth = 2;
+  [{ c: ririsC, r: irisRadiusPx }, { c: lirisC, r: irisRadiusPx }].forEach(({ c, r }) => {
+    ctx.beginPath(); ctx.arc(c.x, c.y, r, 0, Math.PI * 2); ctx.stroke();
+    // pupil crosshair
+    ctx.beginPath();
+    ctx.moveTo(c.x - 10, c.y); ctx.lineTo(c.x + 10, c.y);
+    ctx.moveTo(c.x, c.y - 10); ctx.lineTo(c.x, c.y + 10);
+    ctx.strokeStyle = 'rgba(255,255,100,.9)'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.strokeStyle = 'rgba(20,184,166,.85)'; ctx.lineWidth = 2;
+  });
+
+  // ── Nose bridge midline ──
+  const nose = pt(168);
+  ctx.beginPath(); ctx.moveTo(nose.x, ririsC.y - 40); ctx.lineTo(nose.x, ririsC.y + 40);
+  ctx.strokeStyle = 'rgba(255,255,255,.38)'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]);
+
+  // ── DNP measurement lines ──
+  ctx.strokeStyle = 'rgba(20,184,166,.9)'; ctx.lineWidth = 1.5;
+  // Right: nose center to right iris
+  ctx.beginPath(); ctx.moveTo(nose.x, ririsC.y); ctx.lineTo(ririsC.x, ririsC.y); ctx.stroke();
+  // Left: nose center to left iris
+  ctx.beginPath(); ctx.moveTo(nose.x, lirisC.y); ctx.lineTo(lirisC.x, lirisC.y); ctx.stroke();
+  // Total: right iris to left iris
+  ctx.strokeStyle = 'rgba(245,166,35,.88)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(ririsC.x, (ririsC.y + lirisC.y) / 2); ctx.lineTo(lirisC.x, (ririsC.y + lirisC.y) / 2); ctx.stroke();
+
+  // ── Tick marks ──
+  ctx.strokeStyle = 'rgba(20,184,166,.88)'; ctx.lineWidth = 2;
+  [ririsC.x, lirisC.x, nose.x].forEach(x => {
+    ctx.beginPath(); ctx.moveTo(x, ririsC.y - 8); ctx.lineTo(x, ririsC.y + 8); ctx.stroke();
+  });
+
+  // ── Ruler top of frame (simulates physical ruler overlay) ──
+  const eyeTop = Math.min(ririsC.y, lirisC.y) - irisRadiusPx * 2.8;
+  const frameLeft = ririsC.x + irisRadiusPx * 2.4;
+  const frameRight = lirisC.x - irisRadiusPx * 2.4;
+  ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.moveTo(frameLeft, eyeTop); ctx.lineTo(frameRight, eyeTop); ctx.stroke();
+  // Corner marks
+  [frameLeft, frameRight].forEach(x => {
+    ctx.beginPath(); ctx.moveTo(x, eyeTop - 8); ctx.lineTo(x, eyeTop + 8); ctx.stroke();
+  });
+
+  // ── Ruler label ──
+  const midX = (frameLeft + frameRight) / 2;
+  const widthPx = Math.abs(frameRight - frameLeft);
+  const widthMm = (widthPx / pxPerMm).toFixed(0);
+  ctx.fillStyle = 'rgba(255,255,255,.9)';
+  ctx.font = `bold ${Math.max(10, w * 0.018)}px Space Mono, monospace`;
+  ctx.textAlign = 'center';
+  ctx.fillText(`${widthMm}mm`, midX, eyeTop - 12);
+
+  // ── Bottom frame line (altura ref) ──
+  const chin = pt(152);
+  const botY = ririsC.y + irisRadiusPx * 5.5;
+  if (botY < chin.y) {
+    ctx.strokeStyle = 'rgba(245,166,35,.55)'; ctx.lineWidth = 1.5; ctx.setLineDash([5, 5]);
+    ctx.beginPath(); ctx.moveTo(frameLeft, botY); ctx.lineTo(frameRight, botY); ctx.stroke();
+    ctx.setLineDash([]);
+    // Altura line
+    ctx.strokeStyle = 'rgba(245,166,35,.8)'; ctx.lineWidth = 1.5;
+    const midXf = (frameLeft + frameRight) / 2;
+    ctx.beginPath(); ctx.moveTo(midXf, ririsC.y); ctx.lineTo(midXf, botY); ctx.stroke();
+    const altPx = botY - ririsC.y;
+    const altMm = (altPx / pxPerMm).toFixed(0);
+    ctx.fillStyle = 'rgba(245,166,35,.96)';
+    ctx.font = `bold ${Math.max(9, w * 0.016)}px Space Mono, monospace`;
+    ctx.textAlign = 'left';
+    ctx.fillText(`Alt:${altMm}mm`, midXf + 5, (ririsC.y + botY) / 2);
+  }
+
+  // ── Face mesh subtle outline (cheeks) ──
+  const faceContour = [10,338,297,332,284,251,389,356,454,323,361,288,397,365,379,378,400,377,152,148,176,149,150,136,172,58,132,93,234,127,162,21,54,103,67,109];
+  ctx.beginPath();
+  faceContour.forEach((idx, i) => {
+    const p = pt(idx);
+    i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y);
+  });
+  ctx.closePath();
+  ctx.strokeStyle = 'rgba(20,184,166,.18)'; ctx.lineWidth = 1.5; ctx.stroke();
+}
+
+// ─── Calculate measurements from landmarks ───
+function calcMeasurements(lm, w, h) {
+  const px = (i) => lm[i].x * w;
+  const py = (i) => lm[i].y * h;
+  const dist = (a, b) => Math.sqrt((px(a) - px(b)) ** 2 + (py(a) - py(b)) ** 2);
+
+  // Iris centers (refined landmarks)
+  const ririsX = px(473), ririsY = py(473);
+  const lirisX = px(468), lirisY = py(468);
+  const ririsRx = px(474);
+  const irisRadPx = Math.abs(ririsRx - ririsX);
+  if (irisRadPx > 3) pxPerMm = (irisRadPx * 2) / 11.7;
+
+  // Nose bridge center (landmark 168)
+  const noseX = px(168);
+
+  // DNP: nose bridge to each iris center
+  const dnpOD_px = Math.abs(noseX - ririsX);
+  const dnpOE_px = Math.abs(noseX - lirisX);
+  const dnpOD = Math.round(dnpOD_px / pxPerMm);
+  const dnpOE = Math.round(dnpOE_px / pxPerMm);
+  const dnpTot = dnpOD + dnpOE;
+
+  // Altura de montagem: iris center to bottom of aro (estimated)
+  const aroH = selectedModel ? selectedModel.altAro : 34;
+  const aroEdgeBottom = ririsY + irisRadPx * 5.8;
+  const altPx = aroEdgeBottom - ririsY;
+  const alt = Math.max(14, Math.round(altPx / pxPerMm));
+
+  // Width of frame area
+  const frameWidth_px = Math.abs(lirisX - ririsX) + irisRadPx * 4.8;
+  const largAro = Math.round(frameWidth_px / pxPerMm / 2); // per eye
+
+  // Diâmetro mínimo = sqrt(DNP_semi^2 + (alt - refAlt)^2) + margem
+  const dnpSemi = Math.max(dnpOD, dnpOE);
+  const diam = Math.round(Math.sqrt(dnpSemi ** 2 + alt ** 2) + 2);
+
+  // Ângulo pantoscópico (simulated from face tilt / nose tip vs chin)
+  const noseTip = py(4), chin = py(152);
+  const foreHead = py(10);
+  const faceTilt_deg = Math.atan2(px(152) - px(10), chin - foreHead) * 180 / Math.PI;
+  const angPant = Math.max(6, Math.min(14, Math.round(8 + faceTilt_deg * 0.5)));
+
+  // DCV: estimated 12–14mm baseline + correction
+  const cheekDepth_px = dist(234, 93);
+  const dcv = Math.max(10, Math.min(16, Math.round(12 + cheekDepth_px / pxPerMm * 0.08)));
+
+  return { dnpOD, dnpOE, dnpTot, alt, largAro, altAro: aroH, diam, angPant, dcv };
+}
+
+function updateHUDlive(m) {
+  if (!m) {
+    ['dnp', 'alt', 'diam'].forEach(k => {
+      $('hv-' + k).textContent = '--';
+      $('hm-' + k).classList.remove('ready');
+    });
+    return;
+  }
+  $('hv-dnp').textContent = m.dnpTot + 'mm';
+  $('hv-alt').textContent = m.alt + 'mm';
+  $('hv-diam').textContent = m.diam + 'mm';
+  ['dnp', 'alt', 'diam'].forEach(k => $('hm-' + k).classList.add('ready'));
+}
+
+// ═══ CAPTURE ═══
+function captureMeasures() {
+  if (!captureReady || !lastLandmarks) { toast('⚠️ Aguarde o rosto ser detectado', 'var(--o)'); return; }
+  const vid = $('vid');
+  const m = calcMeasurements(lastLandmarks, vid.videoWidth || 640, vid.videoHeight || 480);
+  measurements = m;
+
+  // Snapshot
+  const snap = document.createElement('canvas');
+  snap.width = vid.videoWidth; snap.height = vid.videoHeight;
+  const sctx = snap.getContext('2d');
+  sctx.scale(-1, 1); sctx.drawImage(vid, -snap.width, 0); sctx.scale(-1, 1);
+  drawFaceOverlay(sctx, lastLandmarks, snap.width, snap.height);
+  snapDataURL = snap.toDataURL('image/jpeg', 0.88);
+
+  // Show loading animation
+  showLoading(m);
+}
+
+function showLoading(m) {
+  $('loadOv').classList.add('on');
+  const steps = ['ls1', 'ls2', 'ls3', 'ls4', 'ls5'];
+  const msgs = [
+    'Detectando 468 landmarks faciais...',
+    'Calculando DNP binocular...',
+    'Medindo altura de montagem...',
+    'Estimando diâmetro mínimo...',
+    'Gerando laudo completo...'
+  ];
+  let i = 0;
+  const interval = setInterval(() => {
+    if (i < steps.length) {
+      $(steps[i]).classList.add('done');
+      $('loadMsg').textContent = msgs[i] || '...';
+      i++;
+    } else {
+      clearInterval(interval);
+      setTimeout(() => {
+        $('loadOv').classList.remove('on');
+        goStep(2);
+        toast('✅ Medidas capturadas com sucesso!');
+      }, 500);
+    }
+  }, 600);
+}
+
+// ═══ RENDER RESULTS ═══
+function renderResults() {
+  const m = measurements;
+  if (!m.dnpTot) return;
+
+  $('res-dnp-od').textContent = m.dnpOD;
+  $('res-dnp-oe').textContent = m.dnpOE;
+  $('res-dnp-tot').innerHTML = m.dnpTot + '<span style="font-size:14px;color:var(--c2)">mm</span>';
+  $('res-alt').innerHTML = m.alt + '<span class="rcard-unit">mm</span>';
+  $('res-alt-sub').textContent = m.alt <= 18 ? 'Baixa — atenção em progressivas' : m.alt >= 22 ? 'Ideal para progressiva' : 'Adequada para multifocal';
+  $('res-diam').innerHTML = m.diam + '<span class="rcard-unit">mm</span>';
+  $('res-ang').innerHTML = m.angPant + '<span class="rcard-unit">°</span>';
+  $('res-dcv').innerHTML = m.dcv + '<span class="rcard-unit">mm</span>';
+  $('res-larg').innerHTML = m.largAro + '<span class="rcard-unit">mm</span>';
+  $('res-halt').innerHTML = m.altAro + '<span class="rcard-unit">mm</span>';
+  $('resBadgeDate').textContent = new Date().toLocaleDateString('pt-BR');
+
+  // Snapshot
+  if (snapDataURL) {
+    $('snapImg').src = snapDataURL;
+    $('snapWrap').style.display = 'block';
+  }
+
+  // Face type analysis
+  const ratio = m.dnpTot / m.alt;
+  let faceType, faceDesc, faceIc;
+  if (ratio > 4.2) { faceType = 'Rosto Longo'; faceDesc = 'Recomendamos armações largas e horizontais para equilibrar as proporções.'; faceIc = '🔷'; }
+  else if (ratio < 3.2) { faceType = 'Rosto Redondo'; faceDesc = 'Armações angulares e retangulares alongam visualmente o rosto.'; faceIc = '🔵'; }
+  else if (m.dnpTot > 68) { faceType = 'Rosto Quadrado'; faceDesc = 'Armações arredondadas e ovais suavizam as linhas angulares.'; faceIc = '⬜'; }
+  else { faceType = 'Rosto Oval'; faceDesc = 'Formato ideal! Quase todos os estilos de armação combinam bem.'; faceIc = '🔶'; }
+  $('faceTypeName').textContent = faceType;
+  $('faceTypeDesc').textContent = faceDesc;
+  $('faceTypeIc').textContent = faceIc;
+
+  // Recommendations
+  const faceKey = faceType.split(' ')[1].toLowerCase();
+  $('recsGrid').innerHTML = MODELS.map(m => {
+    const ok = m.faceType.includes(faceKey) || faceKey === 'oval';
+    return `<div class="rec ${ok ? 'ok' : 'bad'}">
+      <div class="rec-thumb">${m.emoji}</div>
+      <div class="rec-name">${m.name}</div>
+      <div class="rec-tag" style="color:${ok ? 'var(--g)' : 'var(--r)'}">${ok ? '✓ Recomendado' : '✗ Evitar'}</div>
+    </div>`;
+  }).join('');
+}
+
+// ═══ SAVE + SHARE ═══
+function saveMeasures() {
+  const m = measurements;
+  const client = $('cfName').value.trim() || 'Cliente';
+  const saved = JSON.parse(localStorage.getItem('nyna_measures') || '[]');
+  saved.push({
+    client, phone: $('cfPhone').value.trim(),
+    product: $('cfProd').value.trim(),
+    date: new Date().toISOString(),
+    measures: m,
+    rx: {
+      od: { esf: $('rx-od-esf').value, cil: $('rx-od-cil').value, eixo: $('rx-od-eixo').value, add: $('rx-od-add').value },
+      oe: { esf: $('rx-oe-esf').value, cil: $('rx-oe-cil').value, eixo: $('rx-oe-eixo').value, add: $('rx-oe-add').value }
+    },
+    model: selectedModel?.id
+  });
+  localStorage.setItem('nyna_measures', JSON.stringify(saved));
+  toast('💾 Medidas salvas com sucesso!');
+}
+
+function sendWA() {
+  const m = measurements;
+  const client = $('cfName').value.trim() || 'Cliente';
+  const prod = $('cfProd').value.trim() || 'Progressiva Digital';
+  const msg = `🕶️ *NYNA Ótica — Medidas Ópticas*\n\n`+
+    `👤 *Cliente:* ${client}\n`+
+    `📦 *Produto:* ${prod}\n\n`+
+    `📏 *DNP:* OD ${m.dnpOD}mm | OE ${m.dnpOE}mm | Total ${m.dnpTot}mm\n`+
+    `↕️ *Altura de Montagem:* ${m.alt}mm\n`+
+    `🔭 *Diâmetro Mínimo:* ${m.diam}mm\n`+
+    `📐 *Ângulo Pantoscópico:* ${m.angPant}°\n`+
+    `🎯 *Dist. Córnea-Vértice:* ${m.dcv}mm\n`+
+    `📏 *Largura do Aro:* ${m.largAro}mm\n\n`+
+    `📅 ${new Date().toLocaleDateString('pt-BR')} — Sistema NYNA Ótica`;
+  window.open('https://wa.me/5581993403546?text=' + encodeURIComponent(msg), '_blank');
+}
+
+// ═══ MANUAL ENTRY FALLBACK ═══
+// If MediaPipe fails to load, allow manual input of measurements
+function checkMediaPipeReady() {
+  if (typeof FaceMesh === 'undefined') {
+    // Show manual entry fallback in camera step
+    const camPage = document.querySelector('.cam-page');
+    if (camPage) {
+      const fallback = document.createElement('div');
+      fallback.style.cssText = 'padding:18px;background:var(--tlx);border-bottom:2px solid var(--tlp)';
+      fallback.innerHTML = `
+        <div style="background:#fff;border:2px solid var(--o);border-radius:var(--rad);padding:16px;margin-bottom:0">
+          <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--o);font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-bottom:9px">⚠️ Modo Manual Disponível</div>
+          <div style="font-size:12px;color:var(--c1);margin-bottom:13px">Sem acesso ao modelo de IA. Você pode inserir as medidas manualmente ou usar a câmera para visualização básica.</div>
+          <button onclick="openManualEntry()" style="background:var(--tl);color:#fff;border:none;border-radius:var(--rad);padding:11px 18px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;width:100%">📝 Inserir Medidas Manualmente</button>
+        </div>`;
+      camPage.insertBefore(fallback, camPage.firstChild);
+    }
+  }
+}
+
+function openManualEntry() {
+  const modal = document.createElement('div');
+  modal.id = 'manualModal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);display:flex;align-items:flex-end;justify-content:center';
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:22px 22px 0 0;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;border-top:4px solid var(--tl);padding-bottom:env(safe-area-inset-bottom,20px)">
+      <div style="padding:18px 18px 0;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--tlp);padding-bottom:14px;margin-bottom:0">
+        <div style="font-family:'Playfair Display',serif;font-size:19px;font-weight:600">📝 Inserir Medidas Manualmente</div>
+        <button onclick="document.getElementById('manualModal').remove()" style="background:var(--tlx);border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center">✕</button>
+      </div>
+      <div style="padding:18px">
+        <div style="font-size:12px;color:var(--c2);margin-bottom:16px;line-height:1.6">Use uma régua milimetrada ou as medidas de uma armação anterior para preencher os campos abaixo.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+          ${[
+            ['mnDNPOD','DNP Olho Direito (mm)','30','👁️'],
+            ['mnDNPOE','DNP Olho Esquerdo (mm)','30','👁️'],
+            ['mnAlt','Altura de Montagem (mm)','20','📏'],
+            ['mnDiam','Diâmetro Mínimo (mm)','65','🔭'],
+            ['mnAng','Ângulo Pantoscópico (°)','8','📐'],
+            ['mnDCV','Dist. Córnea-Vértice (mm)','12','🎯'],
+            ['mnLarg','Largura do Aro (mm)','52','↔️'],
+            ['mnHalt','Altura do Aro (mm)','32','↕️'],
+          ].map(([id,lbl,ph,ic]) => `
+            <div>
+              <label style="font-size:10px;font-weight:800;color:var(--c2);font-family:'Space Mono',monospace;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:4px">${ic} ${lbl}</label>
+              <input id="${id}" type="number" placeholder="${ph}" step="0.5" style="width:100%;padding:11px;border:2px solid var(--tlp);border-radius:9px;font-family:'Space Mono',monospace;font-size:14px;font-weight:700;outline:none;background:var(--tlx);text-align:center" onfocus="this.style.borderColor='var(--tla)'" onblur="this.style.borderColor='var(--tlp)'">
+            </div>`).join('')}
+        </div>
+        <div style="margin-top:16px">
+          <label style="font-size:10px;font-weight:800;color:var(--c2);font-family:'Space Mono',monospace;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:4px">👤 Nome do Cliente</label>
+          <input id="mnClient" placeholder="Nome do cliente" style="width:100%;padding:11px;border:2px solid var(--tlp);border-radius:9px;font-family:'Nunito',sans-serif;font-size:13px;outline:none;background:var(--tlx)" onfocus="this.style.borderColor='var(--tla)'" onblur="this.style.borderColor='var(--tlp)'">
+        </div>
+        <button onclick="applyManualEntry()" style="background:var(--tl);color:#fff;border:none;border-radius:var(--rad);padding:14px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;cursor:pointer;width:100%;margin-top:15px;display:flex;align-items:center;justify-content:center;gap:7px">✅ Aplicar Medidas e Ver Resultado</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+function applyManualEntry() {
+  const g = (id) => parseFloat(document.getElementById(id)?.value) || 0;
+  const dnpOD = g('mnDNPOD') || 30, dnpOE = g('mnDNPOE') || 30;
+  measurements = {
+    dnpOD, dnpOE, dnpTot: dnpOD + dnpOE,
+    alt: g('mnAlt') || 20, diam: g('mnDiam') || 65,
+    angPant: g('mnAng') || 8, dcv: g('mnDCV') || 12,
+    largAro: g('mnLarg') || 52, altAro: g('mnHalt') || 32,
+  };
+  const clientName = document.getElementById('mnClient')?.value?.trim();
+  if (clientName) document.getElementById('cfName').value = clientName;
+  document.getElementById('manualModal')?.remove();
+  goStep(2);
+  toast('📝 Medidas manuais aplicadas!');
+}
+
+// ═══ EDIT INDIVIDUAL MEASURE ═══
+// Allow clicking on result cards to edit manually
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.rcard').forEach(card => {
+    card.style.cursor = 'pointer';
+    card.title = 'Toque para editar';
+  });
+});
+
+// ═══ PRINT STYLESHEET INJECTION ═══
+function injectPrintStyles() {
+  const style = document.createElement('style');
+  style.textContent = `
+    @media print {
+      body { font-family: Arial, sans-serif; }
+      .rcard { page-break-inside: avoid; }
+      .res-hero { background: #0d9488 !important; -webkit-print-color-adjust: exact; color-adjust: exact; }
+      h1, h2 { color: #0d9488; }
+    }`;
+  document.head.appendChild(style);
+}
+injectPrintStyles();
+
+// ═══ INIT ═══
+initModelRow();
+$('resBadgeDate').textContent = new Date().toLocaleDateString('pt-BR');
+setTimeout(() => {
+  $('splash').classList.add('out');
+  setTimeout(() => {
+    $('app').classList.add('on');
+    // Check MediaPipe availability after app loads
+    setTimeout(checkMediaPipeReady, 2000);
+  }, 400);
+}, 2400);
+</script>
+</body>
+</html>

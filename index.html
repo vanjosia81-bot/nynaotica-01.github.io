@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<meta name="theme-color" content="#1a5fa8">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="NYNA Ótica">
+<title>NYNA Ótica</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Nunito:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --az:#1a5fa8;--azm:#2d7bc4;--azc:#3a8fd4;--azp:#e2f0fb;--axx:#f0f7ff;
+  --w:#fff;--tx:#1a202c;--c1:#4a5568;--c2:#718096;--c3:#a0aec0;
+  --r:#c8102e;--o:#f5a623;--g:#007a3d;--gr:#25D366;
+  --tl:#0d9488;--tlp:#ccfbf1;--tlx:#f0fdfa;
+  --r10:10px;--r18:18px;
+  --sh:0 4px 20px rgba(26,95,168,.11);--shlg:0 8px 40px rgba(26,95,168,.18);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth;height:100%}
+body{font-family:'Nunito',sans-serif;background:var(--axx);color:var(--tx);min-height:100vh;overflow-x:hidden}
+
+/* ═══ SPLASH ═══ */
+#splash{position:fixed;inset:0;z-index:9999;background:linear-gradient(160deg,var(--az),#1052a0,#0d3d6b);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .7s,transform .7s}
+#splash.out{opacity:0;transform:scale(1.04);pointer-events:none}
+.sfl{position:absolute;bottom:0;left:0;right:0;height:8px;background:linear-gradient(90deg,var(--r) 25%,#fff 25%,#fff 50%,var(--o) 50%,var(--o) 75%,var(--g) 75%)}
+.sl{font-family:'Playfair Display',serif;font-size:clamp(56px,18vw,110px);font-weight:600;letter-spacing:.28em;color:#fff;text-shadow:0 4px 30px rgba(0,0,0,.3);animation:fu 1s ease .3s both}
+.ss{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.4em;color:rgba(255,255,255,.6);text-transform:uppercase;margin-top:8px;animation:fu 1s ease .6s both}
+.sdots{display:flex;gap:10px;margin-top:18px;animation:fu .8s ease .9s both}
+.sdots span{width:11px;height:11px;border-radius:50%;display:block}
+.sld{display:flex;gap:8px;margin-top:32px;animation:fu .5s ease 1.2s both}
+.sld span{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.4);animation:bl 1.2s ease infinite}
+.sld span:nth-child(2){animation-delay:.2s}.sld span:nth-child(3){animation-delay:.4s}
+@keyframes fu{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bl{0%,80%,100%{transform:scale(.5);opacity:.3}40%{transform:scale(1);opacity:1}}
+
+/* ═══ APP SHELL ═══ */
+#app{display:none;min-height:100vh;flex-direction:column}
+#app.on{display:flex}
+
+/* ═══ NAV ═══ */
+.nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:var(--az);box-shadow:0 2px 16px rgba(26,95,168,.3)}
+.nav-logo{font-family:'Playfair Display',serif;font-size:23px;font-weight:600;letter-spacing:.18em;color:#fff;cursor:pointer;line-height:1}
+.nav-logo small{display:block;font-size:9px;font-family:'Space Mono',monospace;letter-spacing:.18em;color:rgba(255,255,255,.5);margin-top:1px}
+.nav-r{display:flex;gap:8px}
+.nib{background:rgba(255,255,255,.15);border:none;cursor:pointer;color:#fff;font-size:17px;position:relative;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.nib:hover{background:rgba(255,255,255,.26)}
+.nbg{position:absolute;top:-3px;right:-3px;background:var(--r);color:#fff;font-size:9px;font-weight:800;width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;border:2px solid var(--az)}
+.pes{height:5px;background:linear-gradient(90deg,var(--r) 25%,#fff 25%,#fff 50%,var(--o) 50%,var(--o) 75%,var(--g) 75%)}
+
+/* ═══ TABBAR ═══ */
+.tabs{position:fixed;bottom:0;left:0;right:0;z-index:100;display:flex;background:#fff;box-shadow:0 -3px 20px rgba(26,95,168,.1);border-top:2px solid var(--azp);padding-bottom:env(safe-area-inset-bottom,6px)}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:9px 4px 6px;cursor:pointer;gap:3px;border:none;background:none;color:var(--c3);transition:color .2s}
+.tab.on{color:var(--az)}
+.tab.on .tw{background:var(--azp)}
+.tw{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.ti{font-size:19px}.tl{font-size:9px;letter-spacing:.05em;font-family:'Space Mono',monospace;text-transform:uppercase;font-weight:700}
+
+/* ═══ PAGES ═══ */
+.pg{display:none;flex:1;padding-bottom:80px}
+.pg.on{display:block;animation:pi .3s ease}
+@keyframes pi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ═══ PROMO BAR ═══ */
+.promo{background:var(--r);color:#fff;text-align:center;padding:8px 14px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;overflow:hidden;white-space:nowrap}
+.promo-inner{display:inline-block;animation:marquee 18s linear infinite}
+@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* ═══ HERO ═══ */
+.hero{position:relative;background:linear-gradient(148deg,var(--az) 0%,var(--azm) 55%,#1155a5);padding:52px 22px 44px;overflow:hidden;min-height:72vh;display:flex;flex-direction:column;justify-content:flex-end}
+.hbg div{position:absolute;border-radius:50%;pointer-events:none}
+.hb1{top:-80px;right:-60px;width:280px;height:280px;background:rgba(255,255,255,.06)}
+.hb2{top:60px;right:100px;width:140px;height:140px;background:rgba(245,166,35,.08)}
+.hb3{bottom:130px;left:10px;width:70px;height:70px;background:rgba(200,16,46,.1)}
+.hgw{position:absolute;top:50%;left:50%;transform:translate(-50%,-53%);width:88%;max-width:340px;animation:gf 6s ease-in-out infinite}
+@keyframes gf{0%,100%{transform:translate(-50%,-53%) rotate(-1.5deg)}50%{transform:translate(-50%,-57%) rotate(1.5deg) translateY(-10px)}}
+.hsvg{width:100%;filter:drop-shadow(0 16px 44px rgba(0,0,0,.35))}
+.hbadge{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:50px;padding:5px 16px;margin-bottom:13px;font-size:11px;font-weight:700;color:#fff;letter-spacing:.12em;text-transform:uppercase;font-family:'Space Mono',monospace}
+.hbd{width:8px;height:8px;border-radius:50%;background:var(--o)}
+.htitle{font-family:'Playfair Display',serif;font-size:clamp(38px,11vw,68px);font-weight:600;line-height:1;color:#fff;margin-bottom:13px}
+.htitle em{font-style:italic;color:var(--o)}
+.hdesc{font-size:14px;color:rgba(255,255,255,.75);line-height:1.65;max-width:290px;margin-bottom:26px}
+.hctas{display:flex;gap:11px;flex-wrap:wrap}
+
+/* ═══ BUTTONS ═══ */
+.btn{padding:14px 26px;border:none;cursor:pointer;font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;transition:all .25s;border-radius:var(--r10);text-align:center;display:inline-block}
+.btn-w{background:#fff;color:var(--az);flex:1;box-shadow:0 4px 16px rgba(0,0,0,.16)}
+.btn-w:hover{background:var(--azp);transform:translateY(-1px)}
+.btn-ow{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.42)}
+.btn-ow:hover{border-color:#fff;background:rgba(255,255,255,.1)}
+.btn-b{background:var(--az);color:#fff;flex:1}
+.btn-b:hover{background:var(--azm);transform:translateY(-1px)}
+.btn-r{background:var(--r);color:#fff}
+.btn-r:hover{background:#a00d24}
+.btn-full{width:100%}
+.btn-gr{background:var(--gr);color:#fff}
+
+/* ═══ STATS ═══ */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);background:#fff;border-bottom:2px solid var(--azp);box-shadow:var(--sh)}
+.si{padding:17px 10px;text-align:center;border-right:1px solid var(--azp)}
+.si:last-child{border-right:none}
+.sn{font-family:'Playfair Display',serif;font-size:25px;font-weight:600;color:var(--az);display:block}
+.sl2{font-size:9px;letter-spacing:.12em;color:var(--c2);text-transform:uppercase;font-family:'Space Mono',monospace;margin-top:2px;display:block}
+
+/* ═══ SECTIONS ═══ */
+.sec{padding:30px 0 0}
+.sech{display:flex;align-items:baseline;justify-content:space-between;padding:0 18px 15px}
+.sect{font-family:'Playfair Display',serif;font-size:23px;font-weight:600;color:var(--tx)}
+.secl{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.18em;color:var(--az);text-transform:uppercase;cursor:pointer;background:none;border:none;font-weight:700}
+
+/* ═══ CATEGORIES ═══ */
+.cats{display:flex;gap:11px;padding:0 18px;overflow-x:auto;scrollbar-width:none}
+.cats::-webkit-scrollbar{display:none}
+.cat{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer}
+.catw{width:66px;height:66px;border-radius:17px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:25px;border:2px solid var(--azp);transition:all .24s;box-shadow:0 2px 10px rgba(26,95,168,.07)}
+.cat.on .catw,.cat:hover .catw{border-color:var(--az);background:var(--azp);box-shadow:0 4px 14px rgba(26,95,168,.18)}
+.catn{font-size:11px;font-weight:700;color:var(--c1);text-align:center;transition:color .24s}
+.cat.on .catn{color:var(--az)}
+
+/* ═══ PRODUCT GRID ═══ */
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px;padding:0 15px}
+.pcard{background:#fff;cursor:pointer;border-radius:var(--r18);overflow:hidden;box-shadow:0 2px 13px rgba(26,95,168,.07);transition:all .24s;border:1.5px solid var(--azp)}
+.pcard:hover{box-shadow:var(--shlg);transform:translateY(-2px);border-color:var(--azc)}
+.pimg{width:100%;aspect-ratio:1;background:linear-gradient(135deg,var(--axx),var(--azp));display:flex;align-items:center;justify-content:center;font-size:50px;position:relative;overflow:hidden}
+.pbg{position:absolute;top:10px;left:10px;font-size:8px;font-weight:800;letter-spacing:.11em;padding:3px 9px;border-radius:50px;z-index:2;text-transform:uppercase;font-family:'Space Mono',monospace}
+.pbg.new{background:var(--az);color:#fff}.pbg.sale{background:var(--r);color:#fff}
+.pinfo{padding:11px 13px 15px}
+.pname{font-size:12px;font-weight:700;line-height:1.4;margin-bottom:3px;color:var(--tx)}
+.psub{font-size:10px;color:var(--c2);font-family:'Space Mono',monospace;margin-bottom:10px}
+.prow{display:flex;align-items:center;justify-content:space-between}
+.ppr{font-family:'Playfair Display',serif;font-size:17px;font-weight:600;color:var(--az)}
+.padd{width:32px;height:32px;border-radius:9px;background:var(--az);border:none;cursor:pointer;font-size:20px;color:#fff;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.padd:hover{background:var(--r);transform:scale(1.1)}
+
+/* ═══ RX UPLOAD ═══ */
+.rxbox{margin:0 15px 22px;border:2px dashed var(--azc);border-radius:var(--r18);padding:22px;cursor:pointer;text-align:center;background:var(--axx);transition:all .2s}
+.rxbox:hover,.rxbox.has-file{background:var(--azp);border-color:var(--az)}
+.rxi{font-size:34px;margin-bottom:7px;display:block}
+.rxt{font-size:14px;font-weight:700;color:var(--az);margin-bottom:3px}
+.rxs{font-size:12px;color:var(--c2)}
+.rxfn{font-size:12px;color:var(--az);font-weight:700;margin-top:8px;word-break:break-all}
+
+/* ═══ AR BANNER ═══ */
+.arbanner{margin:26px 15px;background:linear-gradient(135deg,var(--az),#1255a0);border-radius:var(--r18);padding:26px 22px;position:relative;overflow:hidden;cursor:pointer;box-shadow:var(--shlg)}
+.arbanner::before{content:'';position:absolute;top:-50px;right:-50px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.07)}
+.art{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.28em;color:var(--o);text-transform:uppercase;margin-bottom:7px;display:block}
+.artt{font-family:'Playfair Display',serif;font-size:22px;font-weight:600;color:#fff;margin-bottom:7px}
+.artt em{font-style:italic;color:var(--o)}
+.ard{font-size:13px;color:rgba(255,255,255,.73);line-height:1.55;margin-bottom:18px}
+.ari{font-size:42px;position:absolute;right:20px;top:20px}
+
+/* ═══ PE BANNER ═══ */
+.pebanner{margin:26px 15px;border-radius:var(--r18);overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,.1)}
+.pebot{background:#fff;padding:15px 22px;display:flex;gap:8px;flex-wrap:wrap;border-top:3px solid var(--o)}
+.petag{background:var(--azp);color:var(--az);font-size:11px;font-weight:700;padding:5px 13px;border-radius:50px;border:1px solid rgba(26,95,168,.2)}
+
+/* ═══ BRANDS + TESTS ═══ */
+.brands{padding:26px 18px 0}
+.brow{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none}
+.brow::-webkit-scrollbar{display:none}
+.bl{flex-shrink:0;background:#fff;border:1.5px solid var(--azp);border-radius:10px;padding:9px 16px;font-family:'Playfair Display',serif;font-size:13px;font-weight:600;color:var(--c1);transition:all .2s;cursor:pointer}
+.bl:hover{border-color:var(--az);color:var(--az)}
+.tests{padding:28px 18px 0}
+.trow{display:flex;gap:13px;overflow-x:auto;scrollbar-width:none;margin:0 -18px;padding:0 18px 10px}
+.trow::-webkit-scrollbar{display:none}
+.tc{flex-shrink:0;width:228px;background:#fff;border:1.5px solid var(--azp);border-radius:var(--r18);padding:17px;box-shadow:0 2px 10px rgba(26,95,168,.07)}
+.tcs{color:var(--o);font-size:13px;margin-bottom:7px;letter-spacing:2px}
+.tct{font-size:13px;line-height:1.6;color:var(--c1);margin-bottom:11px;font-style:italic}
+.tca{font-size:12px;font-weight:700;color:var(--tx)}
+.tcc{font-size:10px;color:var(--c2);font-family:'Space Mono',monospace}
+
+/* ═══ CATALOG ═══ */
+.cath{padding:22px 18px 0;background:#fff;border-bottom:1px solid var(--azp)}
+.catt{font-family:'Playfair Display',serif;font-size:27px;font-weight:600;margin-bottom:4px}
+.cats2{font-size:13px;color:var(--c2);margin-bottom:15px}
+.sb{display:flex;align-items:center;background:var(--axx);border:2px solid var(--azp);border-radius:50px;padding:10px 17px;gap:9px;margin-bottom:15px;transition:border-color .2s}
+.sb:focus-within{border-color:var(--az);background:#fff}
+.sb input{background:none;border:none;color:var(--tx);font-size:14px;flex:1;outline:none;font-family:'Nunito',sans-serif}
+.sb input::placeholder{color:var(--c3)}
+.ftabs{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding-bottom:15px}
+.ftabs::-webkit-scrollbar{display:none}
+.ftab{flex-shrink:0;padding:7px 17px;border:2px solid var(--azp);border-radius:50px;font-size:12px;cursor:pointer;background:#fff;color:var(--c1);transition:all .2s;font-family:'Nunito',sans-serif;font-weight:700}
+.ftab.on{background:var(--az);color:#fff;border-color:var(--az)}
+.ftab:hover:not(.on){border-color:var(--az);color:var(--az)}
+
+/* ═══ CAMERA / TRY-ON ═══ */
+.trypage{padding:18px;text-align:center;background:var(--axx);min-height:calc(100vh - 140px)}
+.trypt{font-family:'Playfair Display',serif;font-size:28px;font-weight:600;margin-bottom:5px}
+.trypt em{font-style:italic;color:var(--az)}
+.tryps{font-size:13px;color:var(--c2);margin-bottom:22px}
+.cam-wrap{position:relative;width:100%;max-width:340px;margin:0 auto 15px;border-radius:22px;overflow:hidden;background:#111;box-shadow:0 8px 30px rgba(26,95,168,.2)}
+#vid{width:100%;aspect-ratio:3/4;object-fit:cover;display:block;transform:scaleX(-1)}
+#cov{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}
+.cc{position:absolute;width:22px;height:22px;border-color:var(--az);border-style:solid;border-width:0;z-index:3}
+.cc.tl{top:13px;left:13px;border-top-width:3px;border-left-width:3px;border-radius:4px 0 0 0}
+.cc.tr{top:13px;right:13px;border-top-width:3px;border-right-width:3px;border-radius:0 4px 0 0}
+.cc.bl{bottom:13px;left:13px;border-bottom-width:3px;border-left-width:3px;border-radius:0 0 0 4px}
+.cc.br{bottom:13px;right:13px;border-bottom-width:3px;border-right-width:3px;border-radius:0 0 4px 0}
+.cam-ph{width:100%;aspect-ratio:3/4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;background:linear-gradient(135deg,var(--azp),#c8e4f8)}
+.cam-ph-icon{font-size:54px}.cam-ph-txt{font-size:14px;color:var(--az);font-weight:700}
+.cam-btns{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-bottom:18px}
+.trymt{font-family:'Playfair Display',serif;font-size:19px;font-weight:600;margin-bottom:13px;text-align:left}
+.trygrid{display:flex;gap:11px;overflow-x:auto;scrollbar-width:none;padding-bottom:8px}
+.trygrid::-webkit-scrollbar{display:none}
+.tryitem{flex-shrink:0;width:90px;cursor:pointer;border:2.5px solid var(--azp);border-radius:13px;overflow:hidden;transition:all .2s;background:#fff}
+.tryitem.on{border-color:var(--az);box-shadow:0 0 0 3px rgba(26,95,168,.14)}
+.trythumb{width:100%;aspect-ratio:1;background:var(--azp);display:flex;align-items:center;justify-content:center;font-size:30px}
+.tryname{font-size:10px;text-align:center;padding:5px 3px;color:var(--c1);font-weight:700}
+
+/* ═══ PROFILE ═══ */
+.proph{background:linear-gradient(135deg,var(--az),#1255a0);padding:30px 18px 26px}
+.propinfo{display:flex;align-items:center;gap:15px}
+.propav{width:66px;height:66px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:27px;flex-shrink:0;border:3px solid rgba(255,255,255,.38);overflow:hidden}
+.propav img{width:100%;height:100%;object-fit:cover}
+.propn{font-family:'Playfair Display',serif;font-size:21px;font-weight:600;color:#fff}
+.prope{font-size:12px;color:rgba(255,255,255,.62);font-family:'Space Mono',monospace;margin-top:2px}
+.propbody{padding:18px 18px 0}
+.psect{margin-bottom:22px}
+.psectl{font-size:10px;letter-spacing:.25em;color:var(--az);text-transform:uppercase;font-family:'Space Mono',monospace;font-weight:700;margin-bottom:9px}
+.pitem{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--azp);cursor:pointer;transition:color .2s}
+.pitem:hover .pitx{color:var(--az)}
+.pil{display:flex;align-items:center;gap:11px}
+.piw{width:37px;height:37px;border-radius:9px;background:var(--axx);display:flex;align-items:center;justify-content:center;font-size:17px}
+.pitx{font-size:14px;font-weight:600;color:var(--tx);transition:color .2s}
+.piar{color:var(--c3);font-size:15px;font-weight:700}
+.loycard{background:linear-gradient(135deg,var(--az),#0d3d6b);border-radius:var(--r18);padding:22px;margin-bottom:18px;position:relative;overflow:hidden;box-shadow:0 6px 26px rgba(26,95,168,.3)}
+.loycard::before{content:'NYNA';position:absolute;right:-10px;top:50%;transform:translateY(-50%);font-family:'Playfair Display',serif;font-size:74px;font-weight:600;color:rgba(255,255,255,.05);letter-spacing:.1em}
+.loystripe{position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--r),var(--o),var(--g))}
+.loytag{font-size:9px;letter-spacing:.3em;color:rgba(255,255,255,.5);text-transform:uppercase;font-family:'Space Mono',monospace;margin-top:3px}
+.loypts{font-family:'Playfair Display',serif;font-size:40px;font-weight:600;color:#fff}
+.loyptsl{font-size:11px;color:rgba(255,255,255,.58)}
+.loybar{width:100%;height:5px;background:rgba(255,255,255,.13);border-radius:3px;margin-top:13px}
+.loyfill{width:65%;height:100%;background:linear-gradient(90deg,var(--o),#d4891a);border-radius:3px}
+.loylvl{display:flex;justify-content:space-between;margin-top:4px;font-size:10px;color:rgba(255,255,255,.43);font-family:'Space Mono',monospace}
+
+/* ═══ CART SHEET ═══ */
+.ov{position:fixed;inset:0;z-index:500;background:rgba(26,95,168,.32);backdrop-filter:blur(6px);display:none;align-items:flex-end}
+.ov.on{display:flex}
+.sh{width:100%;max-height:90vh;background:#fff;border-radius:24px 24px 0 0;padding:0 0 env(safe-area-inset-bottom,20px);border-top:4px solid var(--az);animation:su .34s cubic-bezier(.4,0,.2,1);overflow:hidden;display:flex;flex-direction:column}
+@keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.shh2{width:40px;height:4px;background:var(--azp);border-radius:2px;margin:11px auto}
+.shh{display:flex;align-items:center;justify-content:space-between;padding:0 18px 14px;border-bottom:1px solid var(--azp)}
+.shht{font-family:'Playfair Display',serif;font-size:23px;font-weight:600}
+.shcl{background:var(--axx);border:none;color:var(--c2);font-size:18px;cursor:pointer;border-radius:50%;width:33px;height:33px;display:flex;align-items:center;justify-content:center}
+.shb{flex:1;overflow-y:auto;padding:18px}
+.cem{text-align:center;padding:56px 18px}
+.cit{display:flex;gap:13px;padding:15px 0;border-bottom:1px solid var(--azp)}
+.citimg{width:62px;height:62px;background:var(--axx);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:27px;flex-shrink:0}
+.citin{flex:1}
+.citn{font-size:13px;font-weight:700;margin-bottom:4px}
+.citp{font-family:'Playfair Display',serif;font-size:16px;color:var(--az);font-weight:600}
+.citq{display:flex;align-items:center;gap:9px;margin-top:7px}
+.qb{width:27px;height:27px;border-radius:7px;background:var(--axx);border:1.5px solid var(--azp);color:var(--az);cursor:pointer;font-size:17px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.qn{font-size:13px;min-width:18px;text-align:center;font-weight:700}
+.shft{padding:15px 18px;border-top:2px solid var(--azp);background:var(--axx)}
+.tr{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:13px}
+.trl{font-size:13px;color:var(--c2);font-weight:600}
+.trv{font-family:'Playfair Display',serif;font-size:25px;color:var(--az);font-weight:600}
+
+/* ═══ PAYMENT MODAL ═══ */
+.payov{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);display:none;align-items:flex-end}
+.payov.on{display:flex}
+.paysh{width:100%;max-height:96vh;background:#fff;border-radius:24px 24px 0 0;padding:0 0 env(safe-area-inset-bottom,20px);border-top:4px solid var(--az);animation:su .34s cubic-bezier(.4,0,.2,1);overflow-y:auto}
+.payhd{display:flex;align-items:center;justify-content:space-between;padding:18px 18px 0}
+.payht{font-family:'Playfair Display',serif;font-size:21px;font-weight:600}
+.paymt{padding:16px 18px 0;display:flex;flex-direction:column;gap:10px}
+.pm{display:flex;align-items:center;gap:13px;padding:15px;border:2px solid var(--azp);border-radius:13px;cursor:pointer;transition:all .2s}
+.pm.on,.pm:hover{border-color:var(--az);background:var(--axx)}
+.pmic{font-size:27px;width:42px;text-align:center}
+.pmn{font-size:14px;font-weight:700;color:var(--tx)}
+.pms{font-size:12px;color:var(--c2);margin-top:1px}
+.pmck{width:21px;height:21px;border-radius:50%;border:2px solid var(--azp);margin-left:auto;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.pm.on .pmck{background:var(--az);border-color:var(--az);color:#fff;font-size:12px}
+.payform{padding:16px 18px}
+.pfl{display:block;font-size:11px;font-weight:700;color:var(--c2);margin-bottom:5px;letter-spacing:.06em;text-transform:uppercase;font-family:'Space Mono',monospace}
+.pfi{width:100%;padding:12px 15px;border:2px solid var(--azp);border-radius:9px;font-size:14px;font-family:'Nunito',sans-serif;outline:none;transition:border-color .2s;background:var(--axx);margin-bottom:14px}
+.pfi:focus{border-color:var(--az);background:#fff}
+.pfg{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.pxbox{background:var(--azp);border:2px dashed var(--azc);border-radius:13px;padding:22px;text-align:center;margin:0 18px 16px}
+.pxcode{font-family:'Space Mono',monospace;font-size:10px;color:var(--az);word-break:break-all;background:#fff;padding:11px;border-radius:7px;margin:11px 0;border:1px solid var(--azp)}
+.bltbox{background:#fff8e1;border:2px dashed var(--o);border-radius:13px;padding:22px;text-align:center;margin:0 18px 16px}
+.paysum{background:var(--axx);margin:0 18px 16px;border-radius:13px;padding:15px}
+.psr{display:flex;justify-content:space-between;font-size:13px;margin-bottom:7px}
+.psr:last-child{border-top:1px solid var(--azp);padding-top:7px;font-weight:800;font-size:14px;color:var(--az)}
+.payact{padding:0 18px 18px;display:flex;gap:11px}
+
+/* ═══ PRODUCT DETAIL ═══ */
+.pdov{position:fixed;inset:0;z-index:400;background:#fff;overflow-y:auto;display:none;flex-direction:column}
+.pdov.on{display:flex}
+.pdhd{display:flex;align-items:center;padding:15px 18px;gap:11px;position:sticky;top:0;background:#fff;border-bottom:1px solid var(--azp);z-index:1}
+.pdbk{background:var(--axx);border:none;border-radius:50%;width:39px;height:39px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:19px;flex-shrink:0}
+.pdtit{font-family:'Playfair Display',serif;font-size:17px;font-weight:600;flex:1}
+.pdimg{width:100%;aspect-ratio:1;max-height:300px;background:linear-gradient(135deg,var(--axx),var(--azp));display:flex;align-items:center;justify-content:center;font-size:96px}
+.pdinfo{padding:22px 18px}
+.pdn{font-family:'Playfair Display',serif;font-size:25px;font-weight:600;margin-bottom:5px}
+.pdb{font-family:'Space Mono',monospace;font-size:11px;color:var(--c2);letter-spacing:.09em;margin-bottom:15px}
+.pdp{font-family:'Playfair Display',serif;font-size:34px;font-weight:600;color:var(--az);margin-bottom:7px}
+.pdpc{font-size:13px;color:var(--c2);margin-bottom:18px}
+.pdtags{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:22px}
+.pdtag{background:var(--azp);color:var(--az);font-size:11px;font-weight:700;padding:5px 11px;border-radius:50px;border:1px solid rgba(26,95,168,.18)}
+.pddesc{font-size:14px;color:var(--c1);line-height:1.7;margin-bottom:22px}
+.pdvl{font-size:11px;font-weight:700;color:var(--c2);letter-spacing:.1em;text-transform:uppercase;font-family:'Space Mono',monospace;margin-bottom:9px;display:block}
+.pdvbs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:22px}
+.pdvb{padding:8px 15px;border:2px solid var(--azp);border-radius:7px;background:#fff;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
+.pdvb.on,.pdvb:hover{border-color:var(--az);background:var(--azp);color:var(--az)}
+.pdacts{display:flex;gap:11px;margin-bottom:18px}
+
+/* ═══ AUTH MODAL ═══ */
+.autov{position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:18px}
+.autov.on{display:flex}
+.aub{background:#fff;border-radius:22px;padding:0;width:100%;max-width:370px;box-shadow:0 20px 70px rgba(0,0,0,.28);border-top:4px solid var(--az);overflow:hidden}
+.autabs{display:flex;gap:0;background:var(--axx);padding:4px;margin:18px 18px 0}
+.autabs{border-radius:9px}
+.autab{flex:1;padding:9px;text-align:center;border-radius:7px;cursor:pointer;font-weight:700;font-size:13px;transition:all .2s;border:none;background:none;color:var(--c2)}
+.autab.on{background:#fff;color:var(--az);box-shadow:0 2px 8px rgba(26,95,168,.11)}
+.aufm{display:flex;flex-direction:column;gap:12px;padding:16px 18px 18px}
+.aufi{width:100%;padding:12px 15px;border:2px solid var(--azp);border-radius:9px;font-size:14px;font-family:'Nunito',sans-serif;outline:none;transition:border-color .2s}
+.aufi:focus{border-color:var(--az)}
+.ausep{text-align:center;color:var(--c3);font-size:12px}
+
+/* ═══ SUCCESS ═══ */
+.sucov{position:fixed;inset:0;z-index:800;background:linear-gradient(135deg,#007a3d,#00a853);display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px;animation:pi .4s ease}
+.sucov.on{display:flex}
+.suci{font-size:78px;margin-bottom:18px;animation:pop .5s ease .2s both}
+@keyframes pop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.suct{font-family:'Playfair Display',serif;font-size:30px;font-weight:600;color:#fff;margin-bottom:11px}
+.suss{font-size:15px;color:rgba(255,255,255,.84);line-height:1.6;margin-bottom:28px}
+.succ{background:rgba(255,255,255,.2);border-radius:11px;padding:11px 22px;font-family:'Space Mono',monospace;font-size:17px;color:#fff;font-weight:700;letter-spacing:.08em;margin-bottom:28px}
+
+/* ═══ TOAST ═══ */
+.toast{position:fixed;top:76px;left:50%;transform:translateX(-50%) translateY(-16px);background:var(--az);color:#fff;padding:11px 22px;border-radius:50px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;opacity:0;z-index:9000;transition:all .3s;white-space:nowrap;box-shadow:0 4px 18px rgba(26,95,168,.36);pointer-events:none;max-width:90vw;white-space:normal;text-align:center}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ═══ WA FLOAT ═══ */
+.wafl{position:fixed;bottom:92px;right:15px;z-index:200;width:52px;height:52px;border-radius:50%;background:#25D366;color:#fff;border:none;cursor:pointer;box-shadow:0 4px 18px rgba(37,211,102,.44);display:flex;align-items:center;justify-content:center;transition:all .3s;text-decoration:none}
+.wafl:hover{transform:scale(1.1)}
+
+@media(min-width:480px){.pgrid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:768px){.pgrid{grid-template-columns:repeat(3,1fr)}.hero{min-height:60vh}}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="sfl"></div>
+  <div class="sl">NYNA</div>
+  <div class="ss">Ótica · Recife · Pernambuco</div>
+  <div class="sdots">
+    <span style="background:#c8102e"></span><span style="background:#fff"></span>
+    <span style="background:#f5a623"></span><span style="background:#007a3d"></span><span style="background:#3a8fd4"></span>
+  </div>
+  <div class="sld"><span></span><span></span><span></span></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- APP -->
+<div id="app">
+  <div class="promo"><div class="promo-inner">🕶️ Frete grátis acima de R$200 · Parcele em 10x sem juros · Recife–PE &nbsp;&nbsp;&nbsp; 🕶️ Frete grátis acima de R$200 · Parcele em 10x sem juros · Recife–PE</div></div>
+
+  <nav class="nav">
+    <div class="nav-logo" onclick="goTab('home')">NYNA<small>Ótica · Recife</small></div>
+    <div class="nav-r">
+      <button class="nib" id="navUser" onclick="goTab('profile')" title="Perfil">👤</button>
+      <button class="nib" onclick="openCart()">🛒<span class="nbg" id="cartBadge">0</span></button>
+    </div>
+  </nav>
+  <div class="pes"></div>
+
+  <!-- ══ HOME ══ -->
+  <div class="pg on" id="pg-home">
+    <div class="hero">
+      <div class="hbg"><div class="hb1"></div><div class="hb2"></div><div class="hb3"></div></div>
+      <div class="hgw">
+        <svg class="hsvg" viewBox="0 0 400 160" fill="none">
+          <defs>
+            <filter id="gw"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="rgba(255,255,255,.22)"/>
+              <stop offset="100%" stop-color="rgba(255,255,255,.04)"/>
+            </linearGradient>
+          </defs>
+          <rect x="18" y="38" width="152" height="96" rx="22" fill="none" stroke="white" stroke-width="5" filter="url(#gw)"/>
+          <rect x="25" y="45" width="138" height="82" rx="17" fill="url(#lg)"/>
+          <rect x="230" y="38" width="152" height="96" rx="22" fill="none" stroke="white" stroke-width="5" filter="url(#gw)"/>
+          <rect x="237" y="45" width="138" height="82" rx="17" fill="url(#lg)"/>
+          <path d="M170 86 Q200 66 230 86" stroke="white" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <line x1="18" y1="64" x2="0" y2="58" stroke="white" stroke-width="5" stroke-linecap="round"/>
+          <line x1="382" y1="64" x2="400" y2="58" stroke="white" stroke-width="5" stroke-linecap="round"/>
+          <circle cx="200" cy="86" r="5" fill="#f5a623" opacity=".9"/>
+        </svg>
+      </div>
+      <div class="hbadge"><div class="hbd"></div>Coleção 2025 · Recife</div>
+      <h1 class="htitle">Ver o mundo<br>com <em>estilo</em></h1>
+      <p class="hdesc">Óculos de grau, sol e clipon polarizado. Qualidade e elegância direto do Recife para você.</p>
+      <div class="hctas">
+        <button class="btn btn-w" onclick="goTab('catalog')">Ver Coleção</button>
+        <button class="btn btn-ow" onclick="goTab('tryon')">Experimentar AR</button>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="si"><span class="sn">500+</span><span class="sl2">Modelos</span></div>
+      <div class="si"><span class="sn">12+</span><span class="sl2">Anos</span></div>
+      <div class="si"><span class="sn">★ 4.9</span><span class="sl2">Avaliação</span></div>
+    </div>
+
+    <div class="sec">
+      <div class="sech"><h2 class="sect">Categorias</h2><button class="secl" onclick="goTab('catalog')">Ver todas →</button></div>
+      <div class="cats" id="homecats">
+        <div class="cat on" onclick="fcHome(this,'todos')"><div class="catw">🕶️</div><span class="catn">Todos</span></div>
+        <div class="cat" onclick="fcHome(this,'sol')"><div class="catw">☀️</div><span class="catn">Sol</span></div>
+        <div class="cat" onclick="fcHome(this,'grau')"><div class="catw">👓</div><span class="catn">Grau</span></div>
+        <div class="cat" onclick="fcHome(this,'clipon')"><div class="catw">🔆</div><span class="catn">Clipon</span></div>
+        <div class="cat" onclick="fcHome(this,'infantil')"><div class="catw">🧒</div><span class="catn">Infantil</span></div>
+        <div class="cat" onclick="fcHome(this,'lentes')"><div class="catw">👁️</div><span class="catn">Lentes</span></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sech"><h2 class="sect">Destaques</h2><button class="secl" onclick="goTab('catalog')">Ver mais →</button></div>
+      <div class="pgrid" id="homeProds"></div>
+    </div>
+
+    <div style="padding:26px 0 0">
+      <div class="rxbox" id="rxHome" onclick="trigRx('rxFHome')">
+        <input type="file" id="rxFHome" style="display:none" accept=".pdf,.jpg,.jpeg,.png" onchange="handleRx(this,'rxHome')">
+        <span class="rxi">📋</span>
+        <div class="rxt">Envie sua receita médica</div>
+        <div class="rxs">Toque para anexar PDF ou foto</div>
+        <div class="rxfn" id="rxHomeLbl"></div>
+      </div>
+    </div>
+
+    <div class="arbanner" onclick="goTab('tryon')">
+      <span class="ari">🤳</span>
+      <span class="art">Novidade · Realidade Aumentada</span>
+      <h3 class="artt">Experimente <em>virtualmente</em></h3>
+      <p class="ard">Veja os óculos no seu rosto antes de comprar, pelo celular.</p>
+      <button class="btn btn-w" style="max-width:190px;flex:none">Experimentar Agora</button>
+    </div>
+
+    <!-- TOMADOR DE MEDIDAS BANNER -->
+    <div class="arbanner" style="background:linear-gradient(135deg,#0d9488,#0f766e);margin-top:0" onclick="window.location='medidas.html'">
+      <span class="ari">📐</span>
+      <span class="art">Ferramenta Clínica · Tecnologia Digital</span>
+      <h3 class="artt">Tomador de <em>Medidas</em></h3>
+      <p class="ard">DNP, Altura de Montagem, Diâmetro, Ângulo Pantoscópico e DCV. Tudo com a câmera do celular.</p>
+      <button class="btn btn-w" style="max-width:200px;flex:none">📏 Tomar Medidas Agora</button>
+    </div>
+
+    <div class="pebanner">
+      <div style="background:var(--r);padding:18px 22px;display:flex;align-items:center;gap:13px">
+        <span style="font-size:34px">🏛️</span>
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:19px;font-weight:600;color:#fff">Orgulho Pernambucano</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.8);margin-top:2px">Nascida no Recife, para o Brasil inteiro</div>
+        </div>
+      </div>
+      <div class="pebot">
+        <span class="petag">📍 Boa Vista, Recife</span>
+        <span class="petag">🚚 Entrega Nacional</span>
+        <span class="petag">💛 Feito no Nordeste</span>
+      </div>
+    </div>
+
+    <div class="brands">
+      <div style="font-family:'Playfair Display',serif;font-size:19px;font-weight:600;margin-bottom:13px">Marcas Parceiras</div>
+      <div class="brow">
+        <div class="bl">Ray-Ban</div><div class="bl">Oakley</div><div class="bl">Prada</div>
+        <div class="bl">Guess</div><div class="bl">Calvin Klein</div><div class="bl">Versace</div><div class="bl">NYNA</div>
+      </div>
+    </div>
+
+    <div class="tests">
+      <div style="font-family:'Playfair Display',serif;font-size:23px;font-weight:600;margin-bottom:15px">O que dizem</div>
+      <div class="trow">
+        <div class="tc"><div class="tcs">★★★★★</div><p class="tct">"Atendimento incrível, óculos de altíssima qualidade. Já é minha segunda compra!"</p><div class="tca">Ana Beatriz M.</div><div class="tcc">Recife, PE</div></div>
+        <div class="tc"><div class="tcs">★★★★★</div><p class="tct">"Os clipons polarizados são fantásticos! Entrega rápida e embalagem impecável."</p><div class="tca">Carlos Eduardo S.</div><div class="tcc">Olinda, PE</div></div>
+        <div class="tc"><div class="tcs">★★★★★</div><p class="tct">"Enviei receita pelo app e recebi indicação personalizada em 1 hora. Perfeito!"</p><div class="tca">Mariana T.</div><div class="tcc">João Pessoa, PB</div></div>
+      </div>
+    </div>
+    <div style="height:36px"></div>
+  </div>
+
+  <!-- ══ CATALOG ══ -->
+  <div class="pg" id="pg-catalog">
+    <div class="cath">
+      <h1 class="catt">Catálogo</h1>
+      <p class="cats2">Encontre o par perfeito para você</p>
+      <div class="sb"><span style="color:var(--azc);font-size:15px">🔍</span><input type="text" placeholder="Buscar óculos..." id="searchIn" oninput="filterSearch()"></div>
+      <div class="ftabs">
+        <button class="ftab on" onclick="setFil(this,'todos')">Todos</button>
+        <button class="ftab" onclick="setFil(this,'sol')">☀️ Sol</button>
+        <button class="ftab" onclick="setFil(this,'grau')">👓 Grau</button>
+        <button class="ftab" onclick="setFil(this,'clipon')">🔆 Clipon</button>
+        <button class="ftab" onclick="setFil(this,'infantil')">🧒 Infantil</button>
+        <button class="ftab" onclick="setFil(this,'titanio')">Titânio</button>
+        <button class="ftab" onclick="setFil(this,'acetato')">Acetato</button>
+      </div>
+    </div>
+    <div style="padding:14px 0"><div class="pgrid" id="allProds"></div></div>
+  </div>
+
+  <!-- ══ TRY-ON ══ -->
+  <div class="pg" id="pg-tryon">
+    <div class="trypage">
+      <h1 class="trypt">Prova <em>Virtual</em></h1>
+      <p class="tryps">Experimente os óculos usando sua câmera frontal em tempo real</p>
+
+      <div class="cam-wrap" id="camWrap">
+        <video id="vid" autoplay playsinline muted style="display:none"></video>
+        <canvas id="cov"></canvas>
+        <div class="cc tl"></div><div class="cc tr"></div><div class="cc bl"></div><div class="cc br"></div>
+        <div class="cam-ph" id="camPh">
+          <div class="cam-ph-icon">📷</div>
+          <div class="cam-ph-txt">Ative a câmera para experimentar</div>
+        </div>
+      </div>
+
+      <div class="cam-btns">
+        <button class="btn btn-b" id="camBtn" onclick="toggleCam()">📷 Ativar Câmera</button>
+        <button class="btn" id="snapBtn" style="background:var(--axx);color:var(--az);border:2px solid var(--azp)" onclick="snapPhoto()" disabled>📸 Foto</button>
+        <button class="btn" id="shareBtn" style="background:var(--axx);color:var(--c2);border:2px solid var(--azp)" onclick="sharePhoto()" disabled>↗ Compartilhar</button>
+      </div>
+
+      <div style="text-align:left">
+        <div class="trymt">Escolha o modelo</div>
+        <div class="trygrid" id="tryGrid"></div>
+      </div>
+
+      <div style="margin-top:22px">
+        <div class="rxbox" id="rxTry" onclick="trigRx('rxFTry')">
+          <input type="file" id="rxFTry" style="display:none" accept=".pdf,.jpg,.jpeg,.png" onchange="handleRx(this,'rxTry')">
+          <span class="rxi">📤</span>
+          <div class="rxt">Enviar Receita ao Especialista</div>
+          <div class="rxs">Após experimentar, envie sua receita para indicação personalizada</div>
+          <div class="rxfn" id="rxTryLbl"></div>
+        </div>
+
+        <!-- TOMADOR DE MEDIDAS CTA -->
+        <div style="margin-top:18px;background:linear-gradient(135deg,#0d9488,#0f766e);border-radius:var(--r18);padding:20px 18px;cursor:pointer;box-shadow:0 6px 24px rgba(13,148,136,.28)" onclick="window.location='medidas.html'">
+          <div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.3em;color:rgba(255,255,255,.62);text-transform:uppercase;margin-bottom:5px">Próximo passo</div>
+          <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:600;color:#fff;margin-bottom:4px">📐 Tomar Medidas Agora</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.5;margin-bottom:13px">DNP · Altura · Diâmetro · Ângulo Pantoscópico · DCV — com a câmera do celular</div>
+          <div style="background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.25);border-radius:9px;padding:10px 16px;color:#fff;font-size:12px;font-weight:800;text-align:center">Abrir Tomador de Medidas →</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PROFILE ══ -->
+  <div class="pg" id="pg-profile">
+    <div class="proph">
+      <div class="propinfo">
+        <div class="propav" id="userAv">👤</div>
+        <div>
+          <div class="propn" id="userName">Visitante</div>
+          <div class="prope" id="userEmail">Faça login para acessar</div>
+        </div>
+      </div>
+    </div>
+    <div class="propbody">
+      <div id="guestBtns" style="margin-bottom:20px;display:flex;gap:11px">
+        <button class="btn btn-b" style="flex:1" onclick="openAuth('login')">Entrar</button>
+        <button class="btn btn-ow" style="flex:1;color:var(--az);border-color:var(--az)" onclick="openAuth('reg')">Cadastrar</button>
+      </div>
+      <div id="logBtns" style="margin-bottom:20px;display:none">
+        <button class="btn" style="background:var(--axx);color:var(--r);border:2px solid #fca5a5" onclick="doLogout()">Sair da conta</button>
+      </div>
+
+      <div class="loycard">
+        <div class="loystripe"></div>
+        <div class="loytag">Programa de Fidelidade · NYNA Club</div>
+        <div class="loypts" id="loyPts">1.250</div>
+        <div class="loyptsl">pontos acumulados</div>
+        <div class="loybar"><div class="loyfill"></div></div>
+        <div class="loylvl"><span>🥈 Prata</span><span>🥇 Ouro: 2.000pts</span></div>
+      </div>
+
+      <div class="psect">
+        <div class="psectl">Minha Conta</div>
+        <div class="pitem" onclick="toast('📦 Nenhum pedido ainda')"><div class="pil"><div class="piw">📦</div><span class="pitx">Meus Pedidos</span></div><span class="piar">›</span></div>
+        <div class="pitem" onclick="toast('❤️ Favoritos em breve!')"><div class="pil"><div class="piw">❤️</div><span class="pitx">Favoritos</span></div><span class="piar">›</span></div>
+        <div class="pitem" onclick="trigRx('rxFProf')">
+          <input type="file" id="rxFProf" style="display:none" accept=".pdf,.jpg,.jpeg,.png" onchange="handleRxProf(this)">
+          <div class="pil"><div class="piw">📋</div><span class="pitx">Minhas Receitas</span></div><span class="piar">›</span>
+        </div>
+        <div class="pitem" onclick="window.location='medidas.html'"><div class="pil"><div class="piw" style="background:var(--tlp);color:var(--tl)">📐</div><span class="pitx" style="color:var(--tl)">Tomador de Medidas Digital</span></div><span class="piar" style="color:var(--tl)">›</span></div>
+        <div class="pitem" onclick="toast('📍 Endereços em breve!')"><div class="pil"><div class="piw">📍</div><span class="pitx">Endereços</span></div><span class="piar">›</span></div>
+      </div>
+
+      <div class="psect">
+        <div class="psectl">Suporte</div>
+        <div class="pitem" onclick="openWA()"><div class="pil"><div class="piw">💬</div><span class="pitx">(81) 99340-3546 WhatsApp</span></div><span class="piar">›</span></div>
+        <div class="pitem" onclick="toast('📍 Rua Martins Junior, 48 – Boa Vista, Recife–PE')"><div class="pil"><div class="piw">🏪</div><span class="pitx">Nossa Loja em Recife</span></div><span class="piar">›</span></div>
+        <div class="pitem" onclick="window.open('https://instagram.com/nynaotica','_blank')"><div class="pil"><div class="piw">📸</div><span class="pitx">@nynaotica no Instagram</span></div><span class="piar">›</span></div>
+        <div class="pitem" onclick="toast('⏰ Seg–Sex: 8h–16h30 · Sáb: 8h–12h')"><div class="pil"><div class="piw">🕐</div><span class="pitx">Horário de Atendimento</span></div><span class="piar">›</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABBAR -->
+  <nav class="tabs">
+    <button class="tab on" id="tab-home" onclick="goTab('home')"><div class="tw"><span class="ti">🏠</span></div><span class="tl">Início</span></button>
+    <button class="tab" id="tab-catalog" onclick="goTab('catalog')"><div class="tw"><span class="ti">🕶️</span></div><span class="tl">Catálogo</span></button>
+    <button class="tab" id="tab-tryon" onclick="goTab('tryon')"><div class="tw"><span class="ti">🤳</span></div><span class="tl">Experimentar</span></button>
+    <button class="tab" id="tab-profile" onclick="goTab('profile')"><div class="tw"><span class="ti">👤</span></div><span class="tl">Perfil</span></button>
+  </nav>
+</div>
+
+<!-- ══ PRODUCT DETAIL ══ -->
+<div class="pdov" id="pdOv">
+  <div class="pdhd">
+    <button class="pdbk" onclick="closePD()">←</button>
+    <span class="pdtit" id="pdTit">Detalhes</span>
+    <button class="nib" onclick="openCart()">🛒<span class="nbg" id="pdBadge">0</span></button>
+  </div>
+  <div class="pdimg" id="pdImg">🕶️</div>
+  <div class="pdinfo">
+    <div class="pdn" id="pdName"></div>
+    <div class="pdb" id="pdBrand"></div>
+    <div class="pdp" id="pdPrice"></div>
+    <div class="pdpc" id="pdParcel"></div>
+    <div class="pdtags" id="pdTags"></div>
+    <div class="pddesc" id="pdDesc"></div>
+    <span class="pdvl">Cor / Variante</span>
+    <div class="pdvbs" id="pdVars"></div>
+    <div class="pdacts">
+      <button class="btn btn-b" style="flex:1" onclick="addFromPD()">🛒 Adicionar ao Carrinho</button>
+      <button class="btn btn-ow" style="color:var(--az);border-color:var(--az)" onclick="openWA()">💬</button>
+    </div>
+    <div class="rxbox" id="rxPD" onclick="trigRx('rxFPD')">
+      <input type="file" id="rxFPD" style="display:none" accept=".pdf,.jpg,.jpeg,.png" onchange="handleRx(this,'rxPD')">
+      <span class="rxi">📋</span>
+      <div class="rxt">Precisa de receita?</div>
+      <div class="rxs">Anexe aqui — nosso óptico analisa e indica</div>
+      <div class="rxfn" id="rxPDLbl"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CART ══ -->
+<div class="ov" id="cartOv" onclick="if(event.target===this)closeCart()">
+  <div class="sh">
+    <div class="shh2"></div>
+    <div class="shh"><div class="shht">Carrinho 🛒</div><button class="shcl" onclick="closeCart()">✕</button></div>
+    <div class="shb" id="cartBody">
+      <div class="cem"><span style="font-size:50px;display:block;margin-bottom:11px">🛒</span><p style="color:var(--c2)">Seu carrinho está vazio</p></div>
+    </div>
+    <div class="shft">
+      <div class="tr"><span class="trl">Total</span><span class="trv" id="cartTotal">R$ 0,00</span></div>
+      <button class="btn btn-b btn-full" onclick="openPay()">💳 Ir para Pagamento</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAYMENT ══ -->
+<div class="payov" id="payOv" onclick="if(event.target===this)closePay()">
+  <div class="paysh">
+    <div class="payhd">
+      <div class="payht">Pagamento 💳</div>
+      <button class="shcl" onclick="closePay()">✕</button>
+    </div>
+    <div class="paysum" id="paySumary" style="margin:14px 18px 0"></div>
+    <div class="paymt">
+      <div class="pm on" id="pm-card" onclick="selPM('card')">
+        <span class="pmic">💳</span>
+        <div><div class="pmn">Cartão de Crédito</div><div class="pms">Visa, Master, Elo, Amex — até 10x sem juros</div></div>
+        <div class="pmck">✓</div>
+      </div>
+      <div class="pm" id="pm-pix" onclick="selPM('pix')">
+        <span class="pmic">⚡</span>
+        <div><div class="pmn">Pix</div><div class="pms">Aprovação imediata · 5% de desconto</div></div>
+        <div class="pmck"></div>
+      </div>
+      <div class="pm" id="pm-boleto" onclick="selPM('boleto')">
+        <span class="pmic">🏦</span>
+        <div><div class="pmn">Boleto Bancário</div><div class="pms">Vence em 3 dias úteis</div></div>
+        <div class="pmck"></div>
+      </div>
+      <div class="pm" id="pm-wa" onclick="selPM('wa')">
+        <span class="pmic" style="color:#25D366">💬</span>
+        <div><div class="pmn">WhatsApp</div><div class="pms">Fale com nossa equipe para finalizar</div></div>
+        <div class="pmck"></div>
+      </div>
+    </div>
+
+    <!-- Cartão -->
+    <div class="payform" id="form-card">
+      <label class="pfl">Número do Cartão</label>
+      <input class="pfi" id="ccnum" placeholder="0000 0000 0000 0000" maxlength="19" oninput="fmtCC(this)">
+      <label class="pfl">Nome no Cartão</label>
+      <input class="pfi" id="ccname" placeholder="NOME COMPLETO">
+      <div class="pfg">
+        <div><label class="pfl">Validade</label><input class="pfi" id="ccexp" placeholder="MM/AA" maxlength="5" oninput="fmtExp(this)"></div>
+        <div><label class="pfl">CVV</label><input class="pfi" id="cccvv" placeholder="123" maxlength="4"></div>
+      </div>
+      <label class="pfl">Parcelas</label>
+      <select class="pfi" id="ccparc">
+        <option>1x sem juros</option><option>2x sem juros</option><option>3x sem juros</option>
+        <option>6x sem juros</option><option>10x sem juros</option>
+      </select>
+    </div>
+
+    <!-- Pix -->
+    <div id="form-pix" style="display:none">
+      <div class="pxbox">
+        <div style="font-size:38px;margin-bottom:7px">⚡</div>
+        <div style="font-family:'Playfair Display',serif;font-size:17px;font-weight:600;margin-bottom:7px">Pagar com Pix</div>
+        <div style="font-size:12px;color:var(--c2);margin-bottom:11px">5% de desconto · aprovação imediata</div>
+        <div class="pxcode" id="pixKey">00020126580014BR.GOV.BCB.PIX0136nynaotica@pix.com.br5204000053039865802BR5910NYNA OTICA6009SAO PAULO62140510nyna20256304ABCD</div>
+        <button class="btn btn-b btn-full" onclick="copyPix()">📋 Copiar Chave Pix</button>
+        <div style="margin-top:11px;font-size:11px;color:var(--c2)">Chave: <strong><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="553b2c3b343a213c363415253c2d7b363a387b3727">[email&#160;protected]</a></strong></div>
+      </div>
+    </div>
+
+    <!-- Boleto -->
+    <div id="form-boleto" style="display:none">
+      <div class="bltbox">
+        <div style="font-size:38px;margin-bottom:7px">🏦</div>
+        <div style="font-family:'Playfair Display',serif;font-size:17px;font-weight:600;margin-bottom:7px">Boleto Bancário</div>
+        <div style="font-size:12px;color:var(--c1);margin-bottom:15px">O boleto será gerado e enviado ao seu e-mail. Vence em 3 dias úteis.</div>
+        <div class="payform" style="padding:0;text-align:left">
+          <label class="pfl">CPF</label>
+          <input class="pfi" id="bltcpf" placeholder="000.000.000-00" maxlength="14" oninput="fmtCpf(this)">
+          <label class="pfl">E-mail</label>
+          <input class="pfi" id="bltemail" type="email" placeholder="seu@email.com">
+        </div>
+      </div>
+    </div>
+
+    <!-- WhatsApp -->
+    <div id="form-wa" style="display:none;padding:22px 18px;text-align:center">
+      <div style="font-size:46px;margin-bottom:11px">💬</div>
+      <div style="font-family:'Playfair Display',serif;font-size:19px;font-weight:600;margin-bottom:7px">Finalizar pelo WhatsApp</div>
+      <p style="font-size:13px;color:var(--c2);line-height:1.6">Enviaremos seu pedido para nossa equipe. Um atendente confirmará em minutos.</p>
+    </div>
+
+    <div class="payact">
+      <button class="btn" style="background:var(--axx);color:var(--c2);border:2px solid var(--azp)" onclick="closePay()">Voltar</button>
+      <button class="btn btn-b" style="flex:1" id="payBtn" onclick="processPay()">Confirmar Pagamento</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ AUTH ══ -->
+<div class="autov" id="authOv" onclick="if(event.target===this)closeAuth()">
+  <div class="aub">
+    <div style="text-align:center;padding:20px 18px 0;position:relative">
+      <button onclick="closeAuth()" style="position:absolute;top:14px;right:14px;background:var(--axx);border:none;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px">✕</button>
+      <div style="font-family:'Playfair Display',serif;font-size:26px;font-weight:600;color:var(--az)">NYNA</div>
+      <div style="font-size:12px;color:var(--c2)">Ótica · Recife</div>
+    </div>
+    <div class="autabs" style="margin:16px 18px 0">
+      <button class="autab on" id="atab-login" onclick="swAuth('login')">Entrar</button>
+      <button class="autab" id="atab-reg" onclick="swAuth('reg')">Cadastrar</button>
+    </div>
+    <div id="form-login" class="aufm">
+      <input class="aufi" id="liEmail" type="email" placeholder="E-mail">
+      <input class="aufi" id="liPass" type="password" placeholder="Senha">
+      <button class="btn btn-b btn-full" onclick="doLogin()">Entrar</button>
+      <div class="ausep">ou</div>
+      <button class="btn btn-gr btn-full" onclick="socialLi('Google')">🔍 Entrar com Google</button>
+    </div>
+    <div id="form-reg" class="aufm" style="display:none">
+      <input class="aufi" id="rgName" placeholder="Nome completo">
+      <input class="aufi" id="rgEmail" type="email" placeholder="E-mail">
+      <input class="aufi" id="rgPhone" type="tel" placeholder="WhatsApp (81) 9xxxx-xxxx">
+      <input class="aufi" id="rgPass" type="password" placeholder="Senha (mín. 6 caracteres)">
+      <button class="btn btn-b btn-full" onclick="doReg()">Criar Conta</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SUCCESS ══ -->
+<div class="sucov" id="sucOv">
+  <div class="suci">✅</div>
+  <div class="suct" id="sucTitle">Pedido Confirmado!</div>
+  <div class="suss" id="sucSub">Obrigado pela compra. Você receberá confirmação em breve.</div>
+  <div class="succ" id="sucCode">NYNA-000000</div>
+  <button class="btn btn-w" onclick="closeSuc()">Voltar à Loja</button>
+</div>
+
+<!-- WA FLOAT -->
+<a class="wafl" href="https://wa.me/5581993403546?text=Olá!%20Vi%20o%20app%20da%20NYNA%20Ótica." target="_blank">
+  <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+</a>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// ═══ SHARED DATA STORE (localStorage) ═══
+let PRODS = JSON.parse(localStorage.getItem('nyna_products')||'null') || [
+  {id:1,name:"Óculos de Sol Redondo UV",sub:"Polímero · Unissex",price:89.90,emoji:"🕶️",cat:"sol",badge:"",desc:"Óculos de sol com proteção UV400, lente polímero de alta qualidade. Design redondo clássico que combina com todos os estilos. Leve e confortável para o dia a dia.",vars:["Preto","Azul Marinho","Vermelho Vinho"],stock:15},
+  {id:2,name:"Clipon Polarizado Retangular",sub:"Preto · Masculino",price:280.00,emoji:"🔆",cat:"clipon",badge:"",desc:"Clipon polarizado com encaixe perfeito para óculos de grau retangular. Elimina reflexos, aumenta contraste e reduz cansaço visual. Ideal para dirigir e atividades ao ar livre.",vars:["Preto","Grafite","Bronze"],stock:8},
+  {id:3,name:"Óculos de Sol Hexagonal",sub:"Dourado · Feminino",price:129.90,emoji:"😎",cat:"sol",badge:"new",desc:"Design hexagonal moderno e feminino. Armação metálica dourada com lentes degradê de alta qualidade. Perfeito para looks sofisticados.",vars:["Dourado/Rosa","Dourado/Verde","Prata/Fumê"],stock:12},
+  {id:4,name:"Clipon Polarizado Quadrado",sub:"Nude · Unissex",price:280.00,emoji:"🔆",cat:"clipon",badge:"",desc:"Clipon de design quadrado em tom nude elegante. Ideal para uso no dia a dia e praia. Lente polarizada que elimina reflexos do sol.",vars:["Nude","Cristal Transparente"],stock:6},
+  {id:5,name:"Óculos de Sol Retangular",sub:"Bege · Acetato",price:129.90,emoji:"🕶️",cat:"sol,acetato",badge:"sale",desc:"Armação em acetato italiano de alta qualidade. Estilo retrô moderno com lentes polarizadas. Um clássico que nunca sai de moda.",vars:["Bege","Tartaruga","Preto Acetato"],stock:20},
+  {id:6,name:"Óculos de Grau Metal",sub:"Prata · Masculino",price:199.90,emoji:"👓",cat:"grau",badge:"new",desc:"Óculos de grau em metal inoxidável leve e resistente. Compatível com diversas prescrições e lentes. Acabamento premium com detalhe dourado.",vars:["Prata","Ouro","Preto Fosco"],stock:10},
+  {id:7,name:"Óculos de Sol Quadrado",sub:"Preto · Polímero",price:129.90,emoji:"😎",cat:"sol",badge:"",desc:"Design quadrado clássico e atemporal. Armação polímero leve com proteção UV total. Versátil para diferentes ocasiões.",vars:["Preto","Marrom Escuro"],stock:18},
+  {id:8,name:"Clipon Redondo Cristal",sub:"Transparente · Unissex",price:280.00,emoji:"🔆",cat:"clipon",badge:"",desc:"Clipon redondo em material cristal elegante. Lente polarizada anti-reflexo de alta definição. Design sofisticado e discreto.",vars:["Cristal","Fumê"],stock:5},
+  {id:9,name:"Óculos Infantil Colorido",sub:"Acetato · Infantil",price:89.90,emoji:"🌈",cat:"infantil",badge:"new",desc:"Óculos infantil flexível e resistente a quedas. Material seguro e certificado. Cores vibrantes que as crianças adoram.",vars:["Azul Royal","Rosa Pink","Amarelo Sol","Verde Limão"],stock:25},
+  {id:10,name:"Óculos de Grau Titânio",sub:"Leve · Premium",price:399.00,emoji:"👓",cat:"grau,titanio",badge:"",desc:"Armação em titânio ultraleviana e resistente à corrosão. A escolha premium para quem exige conforto e durabilidade máximos. Garantia estendida.",vars:["Prata Titânio","Ouro Rosê","Preto Titânio"],stock:4},
+  {id:11,name:"Óculos de Sol Oval",sub:"Dourado · Feminino",price:89.90,emoji:"🕶️",cat:"sol",badge:"",desc:"Design oval delicado e feminino. Armação metálica dourada clássica. Complementa o rosto de forma harmoniosa.",vars:["Dourado","Prata","Rose Gold"],stock:14},
+  {id:12,name:"Óculos de Sol Quadrado Vinho",sub:"Acetato · Feminino",price:129.90,emoji:"😎",cat:"sol,acetato",badge:"",desc:"Óculos em acetato vinho sofisticado. Perfeito para combinar com looks elegantes e eventos especiais.",vars:["Vinho","Bordô Escuro"],stock:9},
+];
+
+let cart = JSON.parse(localStorage.getItem('nyna_cart')||'[]');
+let user = JSON.parse(localStorage.getItem('nyna_user')||'null');
+let activeF = 'todos';
+let curProd = null;
+let curVar = null;
+let payMethod = 'card';
+let camStream = null;
+let tryIdx = 0;
+let snapBlob = null;
+
+const tryModels = [
+  {name:'Aviador',emoji:'🕶️',shape:'av'},
+  {name:'Retangular',emoji:'👓',shape:'rect'},
+  {name:'Oval',emoji:'😎',shape:'oval'},
+  {name:'Redondo',emoji:'🔵',shape:'round'},
+  {name:'Hexagonal',emoji:'✨',shape:'hex'},
+];
+
+// ═══ UTILS ═══
+const $ = id => document.getElementById(id);
+const fmt = v => 'R$ '+Number(v).toFixed(2).replace('.',',');
+function toast(msg,bg){
+  const t=$('toast'); t.textContent=msg; t.style.background=bg||'var(--az)';
+  t.classList.add('on'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('on'),2800);
+}
+function saveCart(){ localStorage.setItem('nyna_cart',JSON.stringify(cart)); }
+
+// ═══ NAV ═══
+function goTab(tab){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  $('pg-'+tab).classList.add('on');
+  $('tab-'+tab).classList.add('on');
+  if(tab==='catalog') renderAll(PRODS);
+  if(tab==='tryon') initTryGrid();
+}
+
+// ═══ RENDER ═══
+function renderCard(p){
+  return `<div class="pcard" onclick="openPD(${p.id})">
+    <div class="pimg">
+      ${p.badge?`<span class="pbg ${p.badge}">${p.badge==='new'?'Novo':'Oferta'}</span>`:''}
+      ${p.emoji}
+    </div>
+    <div class="pinfo">
+      <div class="pname">${p.name}</div>
+      <div class="psub">${p.sub}</div>
+      <div class="prow">
+        <div class="ppr">${fmt(p.price)}</div>
+        <button class="padd" onclick="event.stopPropagation();qAdd(${p.id})">+</button>
+      </div>
+    </div>
+  </div>`;
+}
+function renderHome(){ $('homeProds').innerHTML=PRODS.slice(0,6).map(renderCard).join(''); }
+function renderAll(list){
+  $('allProds').innerHTML=list.length
+    ? list.map(renderCard).join('')
+    : '<div style="padding:44px 18px;text-align:center;color:var(--c3);grid-column:span 2">Nenhum produto encontrado</div>';
+}
+function filterSearch(){
+  const q=$('searchIn').value.toLowerCase();
+  let list = activeF==='todos' ? PRODS : PRODS.filter(p=>p.cat.includes(activeF));
+  if(q) list=list.filter(p=>p.name.toLowerCase().includes(q)||p.sub.toLowerCase().includes(q));
+  renderAll(list);
+}
+function setFil(el,f){
+  document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on'); activeF=f; filterSearch();
+}
+function fcHome(el,f){
+  document.querySelectorAll('#homecats .cat').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on'); goTab('catalog');
+  setTimeout(()=>{
+    activeF=f;
+    document.querySelectorAll('.ftab').forEach(t=>t.classList.toggle('on',f==='todos'?t.textContent==='Todos':t.textContent.toLowerCase().includes(f)));
+    filterSearch();
+  },100);
+}
+
+// ═══ PRODUCT DETAIL ═══
+function openPD(id){
+  const p=PRODS.find(x=>x.id===id); if(!p) return;
+  curProd=p; curVar=p.vars?.[0]||null;
+  $('pdTit').textContent=p.name;
+  $('pdImg').textContent=p.emoji;
+  $('pdName').textContent=p.name;
+  $('pdBrand').textContent=p.sub;
+  $('pdPrice').textContent=fmt(p.price);
+  $('pdParcel').textContent=`Ou 10x de ${fmt(p.price/10)} sem juros`;
+  $('pdDesc').textContent=p.desc||'Óculos de qualidade NYNA Ótica, Recife–PE.';
+  $('pdTags').innerHTML=(p.cat||'').split(',').map(c=>`<span class="pdtag">${c.trim()}</span>`).join('');
+  $('pdVars').innerHTML=(p.vars||[]).map((v,i)=>`<button class="pdvb${i===0?' on':''}" onclick="selVar(this,'${v}')">${v}</button>`).join('');
+  updBadge();
+  $('pdOv').classList.add('on'); $('pdOv').scrollTop=0;
+}
+function closePD(){ $('pdOv').classList.remove('on'); }
+function selVar(el,v){
+  document.querySelectorAll('.pdvb').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on'); curVar=v;
+}
+function addFromPD(){ if(!curProd) return; addToCart(curProd.id); toast(`✅ ${curProd.name} adicionado!`); }
+
+// ═══ CART ═══
+function qAdd(id){ const p=PRODS.find(x=>x.id===id); if(p){ addToCart(id); toast(`✅ ${p.name} adicionado!`); } }
+function addToCart(id){
+  const ex=cart.find(x=>x.id===id);
+  if(ex) ex.qty++;
+  else { const p=PRODS.find(x=>x.id===id); if(p) cart.push({...p,qty:1,selVar:curVar}); }
+  saveCart(); updBadge();
+}
+function updBadge(){
+  const n=cart.reduce((a,c)=>a+c.qty,0);
+  $('cartBadge').textContent=n;
+  if($('pdBadge')) $('pdBadge').textContent=n;
+}
+function openCart(){ renderCart(); $('cartOv').classList.add('on'); }
+function closeCart(){ $('cartOv').classList.remove('on'); }
+function renderCart(){
+  if(!cart.length){
+    $('cartBody').innerHTML='<div class="cem"><span style="font-size:50px;display:block;margin-bottom:11px">🛒</span><p style="color:var(--c2)">Seu carrinho está vazio</p></div>';
+    $('cartTotal').textContent='R$ 0,00'; return;
+  }
+  $('cartBody').innerHTML=cart.map(i=>`
+    <div class="cit">
+      <div class="citimg">${i.emoji}</div>
+      <div class="citin">
+        <div class="citn">${i.name}</div>
+        ${i.selVar?`<div style="font-size:10px;color:var(--c2);margin-bottom:3px">${i.selVar}</div>`:''}
+        <div class="citp">${fmt(i.price)}</div>
+        <div class="citq">
+          <button class="qb" onclick="cQty(${i.id},-1)">−</button>
+          <span class="qn">${i.qty}</span>
+          <button class="qb" onclick="cQty(${i.id},1)">+</button>
+          <button style="margin-left:auto;background:none;border:none;color:var(--r);font-size:17px;cursor:pointer" onclick="rmItem(${i.id})">🗑️</button>
+        </div>
+      </div>
+    </div>`).join('');
+  $('cartTotal').textContent=fmt(cart.reduce((a,c)=>a+c.price*c.qty,0));
+}
+function cQty(id,d){
+  const i=cart.find(x=>x.id===id); if(!i) return;
+  i.qty+=d; if(i.qty<=0) cart=cart.filter(x=>x.id!==id);
+  saveCart(); updBadge(); renderCart();
+}
+function rmItem(id){ cart=cart.filter(x=>x.id!==id); saveCart(); updBadge(); renderCart(); toast('🗑️ Removido'); }
+
+// ═══ PAYMENT ═══
+function openPay(){
+  if(!cart.length){ toast('🛒 Carrinho vazio!','var(--r)'); return; }
+  closeCart(); renderPaySum();
+  $('payOv').classList.add('on');
+}
+function closePay(){ $('payOv').classList.remove('on'); }
+function renderPaySum(){
+  const tot=cart.reduce((a,c)=>a+c.price*c.qty,0);
+  const disc=payMethod==='pix'?tot*.05:0;
+  $('paySumary').innerHTML=`
+    ${cart.map(i=>`<div class="psr"><span>${i.name} x${i.qty}</span><span>${fmt(i.price*i.qty)}</span></div>`).join('')}
+    ${disc?`<div class="psr"><span>Desconto Pix (5%)</span><span style="color:var(--g)">−${fmt(disc)}</span></div>`:''}
+    <div class="psr"><span>Total</span><span>${fmt(tot-disc)}</span></div>`;
+}
+function selPM(m){
+  payMethod=m;
+  ['card','pix','boleto','wa'].forEach(k=>{
+    $('pm-'+k).classList.toggle('on',k===m);
+    $('pm-'+k).querySelector('.pmck').textContent=k===m?'✓':'';
+    $('form-'+k).style.display=k===m?'':'none';
+  });
+  renderPaySum();
+  const labels={card:'Confirmar Pagamento',pix:'Confirmar Pix',boleto:'Gerar Boleto',wa:'Enviar pelo WhatsApp'};
+  $('payBtn').textContent=labels[m]||'Confirmar';
+}
+function fmtCC(el){ let v=el.value.replace(/\D/g,'').substring(0,16); el.value=v.replace(/(.{4})/g,'$1 ').trim(); }
+function fmtExp(el){ let v=el.value.replace(/\D/g,'').substring(0,4); if(v.length>2) v=v.substring(0,2)+'/'+v.substring(2); el.value=v; }
+function fmtCpf(el){ let v=el.value.replace(/\D/g,'').substring(0,11); v=v.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2'); el.value=v; }
+function copyPix(){ navigator.clipboard.writeText($('pixKey').textContent).then(()=>toast('✅ Chave Pix copiada!')).catch(()=>toast('📋 Chave copiada!')); }
+
+function processPay(){
+  const tot=cart.reduce((a,c)=>a+c.price*c.qty,0);
+  if(payMethod==='card'){
+    const num=$('ccnum').value.replace(/\s/g,'');
+    const name=$('ccname').value.trim();
+    const exp=$('ccexp').value;
+    const cvv=$('cccvv').value;
+    if(num.length<16||!name||exp.length<5||cvv.length<3){ toast('⚠️ Preencha todos os dados','var(--r)'); return; }
+    showSuc('Pagamento Aprovado! 🎉','Compra aprovada no cartão. Você receberá confirmação por e-mail.'); cart=[]; saveCart(); updBadge();
+  } else if(payMethod==='pix'){
+    showSuc('Aguardando Pix ⚡',`Escaneie ou use a chave copiada. Valor: ${fmt(tot*.95)} (5% off)`);
+  } else if(payMethod==='boleto'){
+    if(!$('bltcpf').value||$('bltcpf').value.length<14){ toast('⚠️ Informe o CPF','var(--r)'); return; }
+    showSuc('Boleto Gerado! 🏦','Boleto enviado ao seu e-mail. Vence em 3 dias úteis.'); cart=[]; saveCart(); updBadge();
+  } else if(payMethod==='wa'){
+    const msg=`Olá NYNA! Quero finalizar:%0A${cart.map(i=>`• ${i.name} x${i.qty} = ${fmt(i.price*i.qty)}`).join('%0A')}%0A%0ATotal: ${fmt(tot)}`;
+    window.open(`https://wa.me/5581993403546?text=${msg}`,'_blank');
+    closePay(); cart=[]; saveCart(); updBadge(); return;
+  }
+}
+function showSuc(t,s){ closePay(); $('sucTitle').textContent=t; $('sucSub').textContent=s; $('sucCode').textContent=`NYNA-${Date.now().toString().slice(-6)}`; $('sucOv').classList.add('on'); }
+function closeSuc(){ $('sucOv').classList.remove('on'); }
+
+// ═══ CAMERA ═══
+async function toggleCam(){
+  const btn=$('camBtn');
+  if(camStream){
+    camStream.getTracks().forEach(t=>t.stop()); camStream=null;
+    $('vid').style.display='none'; $('camPh').style.display='flex';
+    btn.textContent='📷 Ativar Câmera'; $('snapBtn').disabled=true; $('shareBtn').disabled=true;
+    clearCov(); return;
+  }
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:720},height:{ideal:960}},audio:false});
+    camStream=stream;
+    const v=$('vid'); v.srcObject=stream; v.style.display='block';
+    $('camPh').style.display='none';
+    btn.textContent='🛑 Desativar Câmera'; $('snapBtn').disabled=false;
+    v.onloadedmetadata=()=>{ setupCov(); drawGlasses(); };
+    toast('📷 Câmera ativa! Escolha o modelo abaixo.');
+  } catch(e){
+    toast('❌ Permissão de câmera negada. Verifique configurações do navegador.','var(--r)');
+    console.error(e);
+  }
+}
+function setupCov(){
+  const v=$('vid'), c=$('cov');
+  c.width=v.videoWidth||v.offsetWidth; c.height=v.videoHeight||v.offsetHeight;
+  c.style.position='absolute'; c.style.top='0'; c.style.left='0';
+  c.style.width='100%'; c.style.height='100%';
+}
+function drawGlasses(){
+  const c=$('cov'); const ctx=c.getContext('2d');
+  if(!ctx||!camStream) return;
+  ctx.clearRect(0,0,c.width,c.height);
+  const w=c.width,h=c.height,cx=w/2,cy=h*.37;
+  const fw=w*.7,fh=fw*.42;
+  ctx.save();
+  const shape=tryModels[tryIdx].shape;
+  ctx.strokeStyle='rgba(26,95,168,.88)';
+  ctx.lineWidth=Math.max(3,w/110);
+  ctx.shadowColor='rgba(26,95,168,.5)'; ctx.shadowBlur=10;
+  if(shape==='rect'){
+    const lw=fw*.43,lh=fh;
+    ctx.strokeRect(cx-fw/2,cy-lh/2,lw,lh);
+    ctx.strokeRect(cx+fw/2-lw,cy-lh/2,lw,lh);
+    ctx.beginPath(); ctx.moveTo(cx-fw/2+lw,cy); ctx.lineTo(cx+fw/2-lw,cy); ctx.stroke();
+  } else if(shape==='round'||shape==='oval'){
+    const rx=fw*.22,ry=shape==='oval'?fh*.55:fw*.22;
+    ctx.beginPath(); ctx.ellipse(cx-fw*.23,cy,rx,ry,0,0,Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(cx+fw*.23,cy,rx,ry,0,0,Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx-fw*.23+rx,cy); ctx.lineTo(cx+fw*.23-rx,cy); ctx.stroke();
+  } else if(shape==='hex'){
+    const r=fw*.24;
+    const hexPts=(ox,oy)=>[...Array(6)].map((_,i)=>{const a=Math.PI/180*(60*i-30);return[ox+r*Math.cos(a),oy+r*Math.sin(a)]});
+    const drawHex=(ox,oy)=>{const pts=hexPts(ox,oy);ctx.beginPath();pts.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();ctx.stroke()};
+    drawHex(cx-fw*.26,cy); drawHex(cx+fw*.26,cy);
+    ctx.beginPath(); ctx.moveTo(cx-fw*.26+r,cy); ctx.lineTo(cx+fw*.26-r,cy); ctx.stroke();
+  } else {
+    const lw=fw*.43,lh=fh*.82,rad=lh*.24;
+    ctx.beginPath(); ctx.roundRect(cx-fw/2,cy-lh/2,lw,lh,rad); ctx.stroke();
+    ctx.beginPath(); ctx.roundRect(cx+fw/2-lw,cy-lh/2,lw,lh,rad); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx-fw/2+lw,cy); ctx.lineTo(cx+fw/2-lw,cy); ctx.stroke();
+  }
+  ctx.beginPath(); ctx.moveTo(cx-fw/2,cy-fh*.18); ctx.lineTo(cx-fw/2-w*.06,cy-fh*.08); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx+fw/2,cy-fh*.18); ctx.lineTo(cx+fw/2+w*.06,cy-fh*.08); ctx.stroke();
+  ctx.restore();
+  if(camStream) requestAnimationFrame(drawGlasses);
+}
+function clearCov(){ const c=$('cov'),ctx=c.getContext('2d'); if(ctx) ctx.clearRect(0,0,c.width,c.height); }
+function snapPhoto(){
+  if(!camStream){ toast('📷 Ative a câmera primeiro'); return; }
+  const v=$('vid'); const tmp=document.createElement('canvas');
+  tmp.width=v.videoWidth; tmp.height=v.videoHeight;
+  const ctx=tmp.getContext('2d');
+  ctx.scale(-1,1); ctx.drawImage(v,-tmp.width,0); ctx.scale(-1,1);
+  ctx.drawImage($('cov'),0,0);
+  tmp.toBlob(blob=>{ snapBlob=blob; $('shareBtn').disabled=false; toast('📸 Foto tirada! Toque em Compartilhar.'); },'image/jpeg',.92);
+}
+function sharePhoto(){
+  if(!snapBlob){ toast('📸 Tire uma foto primeiro'); return; }
+  const f=new File([snapBlob],'nyna-tryon.jpg',{type:'image/jpeg'});
+  if(navigator.share&&navigator.canShare({files:[f]})){ navigator.share({title:'NYNA Ótica — Experimento Virtual',text:'Olha como ficou!',files:[f]}); }
+  else { const a=document.createElement('a'); a.href=URL.createObjectURL(snapBlob); a.download='nyna-tryon.jpg'; a.click(); toast('📥 Foto salva!'); }
+}
+
+function initTryGrid(){
+  $('tryGrid').innerHTML=tryModels.map((m,i)=>`
+    <div class="tryitem${i===0?' on':''}" onclick="selTry(${i},this)">
+      <div class="trythumb">${m.emoji}</div>
+      <div class="tryname">${m.name}</div>
+    </div>`).join('');
+}
+function selTry(i,el){
+  tryIdx=i;
+  document.querySelectorAll('.tryitem').forEach(x=>x.classList.remove('on'));
+  el.classList.add('on');
+}
+
+// ═══ RX UPLOAD ═══
+function trigRx(inputId){ $(inputId).click(); }
+function handleRx(input,boxId){
+  const f=input.files[0]; if(!f) return;
+  const lblMap={rxHome:'rxHomeLbl',rxTry:'rxTryLbl',rxPD:'rxPDLbl'};
+  const lblId=lblMap[boxId];
+  if(lblId) $(lblId).textContent=`📎 ${f.name} (${(f.size/1024).toFixed(0)}KB)`;
+  $(boxId).classList.add('has-file');
+  storeRx(f);
+  toast(`✅ Receita "${f.name}" recebida! Nossa equipe entrará em contato.`);
+}
+function handleRxProf(input){
+  const f=input.files[0]; if(!f) return;
+  storeRx(f); toast(`✅ Receita "${f.name}" enviada com sucesso!`);
+}
+function storeRx(f){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const rxs=JSON.parse(localStorage.getItem('nyna_receipts')||'[]');
+    rxs.push({name:f.name,size:f.size,type:f.type,date:new Date().toISOString(),preview:e.target.result.substring(0,300)+'...'});
+    localStorage.setItem('nyna_receipts',JSON.stringify(rxs));
+  };
+  reader.readAsDataURL(f);
+}
+
+// ═══ AUTH ═══
+function openAuth(tab){ $('authOv').classList.add('on'); swAuth(tab||'login'); }
+function closeAuth(){ $('authOv').classList.remove('on'); }
+function swAuth(tab){
+  ['login','reg'].forEach(t=>{ $('atab-'+t).classList.toggle('on',t===tab); $('form-'+t).style.display=t===tab?'flex':'none'; });
+}
+function doLogin(){
+  const email=$('liEmail').value.trim(),pass=$('liPass').value;
+  if(!email||!pass){ toast('⚠️ Preencha e-mail e senha','var(--r)'); return; }
+  const users=JSON.parse(localStorage.getItem('nyna_users')||'[]');
+  const u=users.find(x=>x.email===email&&x.pass===pass);
+  if(!u){ toast('❌ E-mail ou senha incorretos','var(--r)'); return; }
+  user=u; localStorage.setItem('nyna_user',JSON.stringify(u));
+  updUserUI(); closeAuth(); toast(`👋 Bem-vindo(a), ${u.name.split(' ')[0]}!`);
+}
+function doReg(){
+  const name=$('rgName').value.trim(),email=$('rgEmail').value.trim(),phone=$('rgPhone').value.trim(),pass=$('rgPass').value;
+  if(!name||!email||pass.length<6){ toast('⚠️ Preencha todos os campos (senha mín. 6 chars)','var(--r)'); return; }
+  const users=JSON.parse(localStorage.getItem('nyna_users')||'[]');
+  if(users.find(u=>u.email===email)){ toast('⚠️ E-mail já cadastrado','var(--r)'); return; }
+  const u={id:Date.now(),name,email,phone,pass,pts:0};
+  users.push(u); localStorage.setItem('nyna_users',JSON.stringify(users));
+  user=u; localStorage.setItem('nyna_user',JSON.stringify(u));
+  updUserUI(); closeAuth(); toast(`🎉 Bem-vindo(a) à NYNA, ${name.split(' ')[0]}!`);
+}
+function socialLi(p){ toast(`🔑 Login com ${p} em breve!`); }
+function doLogout(){ user=null; localStorage.removeItem('nyna_user'); updUserUI(); toast('👋 Até logo!'); }
+function updUserUI(){
+  if(user){ $('userName').textContent=user.name; $('userEmail').textContent=user.email; $('userAv').textContent='👤'; $('guestBtns').style.display='none'; $('logBtns').style.display='block'; $('loyPts').textContent=(user.pts||1250).toLocaleString('pt-BR'); }
+  else { $('userName').textContent='Visitante'; $('userEmail').textContent='Faça login para acessar'; $('guestBtns').style.display='flex'; $('logBtns').style.display='none'; }
+}
+function openWA(){ window.open('https://wa.me/5581993403546?text=Olá!%20Preciso%20de%20ajuda%20com%20a%20NYNA%20Ótica.','_blank'); }
+
+// ═══ INIT ═══
+renderHome(); renderAll(PRODS); updBadge(); updUserUI();
+if(user) toast(`👋 Olá, ${user.name.split(' ')[0]}!`);
+setTimeout(()=>{ $('splash').classList.add('out'); setTimeout(()=>{ $('splash').style.display='none'; $('app').classList.add('on'); },700); }, 2400);
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>

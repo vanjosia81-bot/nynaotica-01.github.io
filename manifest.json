@@ -1,0 +1,63 @@
+{
+  "name": "NYNA Ótica",
+  "short_name": "NYNA",
+  "description": "Óculos de grau, sol e clipon. Experimente virtualmente com AR. Tomador de medidas digital.",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#1a5fa8",
+  "background_color": "#f0f7ff",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "categories": ["shopping","lifestyle","health"],
+  "icons": [
+    {"src":"icon-48.png","sizes":"48x48","type":"image/png"},
+    {"src":"icon-72.png","sizes":"72x72","type":"image/png"},
+    {"src":"icon-96.png","sizes":"96x96","type":"image/png"},
+    {"src":"icon-144.png","sizes":"144x144","type":"image/png"},
+    {"src":"icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},
+    {"src":"icon-192.png","sizes":"192x192","type":"image/png","purpose":"maskable"},
+    {"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any"},
+    {"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"maskable"}
+  ],
+  "screenshots": [
+    {"src":"screenshot1.png","sizes":"390x844","type":"image/png","form_factor":"narrow","label":"App NYNA Ótica"},
+    {"src":"screenshot2.png","sizes":"1280x800","type":"image/png","form_factor":"wide","label":"NYNA Ótica Desktop"}
+  ],
+  "shortcuts": [
+    {
+      "name": "Catálogo",
+      "short_name": "Catálogo",
+      "description": "Ver todos os óculos",
+      "url": "/index.html#catalog",
+      "icons": [{"src":"icon-96.png","sizes":"96x96"}]
+    },
+    {
+      "name": "Experimentar AR",
+      "short_name": "AR Try-On",
+      "description": "Experimente óculos virtualmente",
+      "url": "/index.html#tryon",
+      "icons": [{"src":"icon-96.png","sizes":"96x96"}]
+    },
+    {
+      "name": "Tomador de Medidas",
+      "short_name": "Medidas",
+      "description": "Medir DNP e altura de montagem",
+      "url": "/medidas.html",
+      "icons": [{"src":"icon-96.png","sizes":"96x96"}]
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=com.nynatica.app",
+      "id": "com.nynatica.app"
+    },
+    {
+      "platform": "itunes",
+      "url": "https://apps.apple.com/app/nyna-otica/id0000000000"
+    }
+  ]
+}
